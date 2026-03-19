@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { createOrg } from "@/lib/actions/org";
 import { Building2 } from "lucide-react";
 
@@ -31,14 +33,25 @@ function SubmitButton() {
 
 export default function CreateOrgPage() {
   const [error, setError] = useState<string | null>(null);
+  const { update } = useSession();
+  const router = useRouter();
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     const result = await createOrg(formData);
-    // If we get here (no redirect), there was an error
+    
     if (!result.success) {
       setError(result.error);
+      return;
     }
+
+    // Update session with new activeOrgId
+    await update({
+      activeOrgId: result.orgId,
+    });
+
+    // Redirect to dashboard
+    router.push("/dashboard");
   }
 
   return (

@@ -1,0 +1,208 @@
+"use client";
+
+import { useState } from "react";
+import { MoreHorizontal, Star, MapPin, Edit2, Trash2, CheckCircle, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Button from "@/app/components/ui/Button";
+import LocationForm from "@/app/components/app/LocationForm";
+import LocationDeleteDialog from "@/app/components/app/LocationDeleteDialog";
+
+type LocationRecord = {
+  id: string;
+  name: string;
+  isDefault: boolean;
+};
+
+interface LocationListProps {
+  initialLocations: LocationRecord[];
+}
+
+export default function LocationList({ initialLocations }: LocationListProps) {
+  const [locations, setLocations] = useState(initialLocations);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<LocationRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LocationRecord | null>(null);
+  const [inlineError, setInlineError] = useState("");
+  const router = useRouter();
+
+  async function reloadLocations() {
+    const response = await fetch("/api/locations", { cache: "no-store" });
+
+    if (response.status === 401) {
+      window.location.assign("/auth/signin");
+      return;
+    }
+
+    const data = (await response.json().catch(() => ({}))) as {
+      locations?: LocationRecord[];
+      error?: string;
+    };
+
+    if (response.status === 403) {
+      setInlineError(data.error ?? "You do not have access to this organization");
+      return;
+    }
+
+    if (!response.ok) {
+      setInlineError(data.error ?? "Unable to load locations");
+      return;
+    }
+
+    setLocations(data.locations ?? []);
+    setInlineError("");
+    router.refresh();
+  }
+
+  async function handleSetDefault(locationId: string) {
+    setInlineError("");
+
+    const response = await fetch(`/api/locations/${locationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isDefault: true }),
+    });
+
+    if (response.status === 401) {
+      window.location.assign("/auth/signin");
+      return;
+    }
+
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (response.status === 403) {
+      setInlineError(data.error ?? "You do not have access to this organization");
+      return;
+    }
+
+    if (!response.ok) {
+      setInlineError(data.error ?? "Unable to set default location");
+      return;
+    }
+
+    await reloadLocations();
+  }
+
+  return (
+    <>
+      <div className="rounded-3xl bg-zinc-900/40 backdrop-blur-3xl border border-white/5 ring-1 ring-white/10 p-6 sm:p-8 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-white tracking-tight">Locations</h2>
+            <p className="mt-1.5 text-sm text-zinc-400">
+              Manage warehouses, shelves, and bins for your organization.
+            </p>
+          </div>
+          <Button 
+            onClick={() => setCreateOpen(true)}
+            className="bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] border-0 transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Location
+          </Button>
+        </div>
+
+        {inlineError && (
+          <div className="mt-6 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 flex items-center gap-3">
+            <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+            {inlineError}
+          </div>
+        )}
+
+        <div className="mt-8">
+          {locations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
+              <div className="h-14 w-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-5 border border-blue-500/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+                <MapPin className="h-6 w-6 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">No locations found</h3>
+              <p className="text-sm text-zinc-400 mb-8 max-w-sm leading-relaxed">
+                Get started by creating your first location to track inventory, shelves, and bins.
+              </p>
+              <Button 
+                onClick={() => setCreateOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/5"
+              >
+                Create First Location
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {locations.map((location) => (
+                <div 
+                  key={location.id} 
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-white/5 shadow-inner group-hover:bg-zinc-800 transition-colors">
+                      <MapPin className="h-5 w-5 text-zinc-400 group-hover:text-zinc-300" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-medium text-zinc-100 text-base">{location.name}</h3>
+                        {location.isDefault && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-300">
+                            <Star className="h-3 w-3 fill-blue-400 text-blue-400" />
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-zinc-500 mt-1 font-mono">ID: {location.id}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-4 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 justify-end">
+                    {!location.isDefault && (
+                      <button 
+                        onClick={() => handleSetDefault(location.id)}
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-transparent hover:border-white/5"
+                      >
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>Make Default</span>
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setEditTarget(location)}
+                      className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-transparent hover:border-white/5"
+                      title="Edit location"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={() => setDeleteTarget(location)}
+                      className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/10"
+                      title="Delete location"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <LocationForm
+        open={createOpen}
+        mode="create"
+        onClose={() => setCreateOpen(false)}
+        onSuccess={reloadLocations}
+      />
+
+      <LocationForm
+        open={Boolean(editTarget)}
+        mode="edit"
+        location={editTarget ?? undefined}
+        onClose={() => setEditTarget(null)}
+        onSuccess={reloadLocations}
+      />
+
+      <LocationDeleteDialog
+        open={Boolean(deleteTarget)}
+        location={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onDeleted={reloadLocations}
+      />
+    </>
+  );
+}

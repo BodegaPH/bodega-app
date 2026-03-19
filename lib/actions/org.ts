@@ -86,8 +86,8 @@ export async function createOrg(formData: FormData): Promise<CreateOrgResult> {
     return newOrg;
   });
 
-  // Redirect to dashboard - the layout will set activeOrgId
-  redirect("/dashboard");
+  // Return org ID so client can update session before redirecting
+  return { success: true, orgId: org.id };
 }
 
 /**

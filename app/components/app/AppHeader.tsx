@@ -22,7 +22,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ user, activeOrg, userOrgs, title = "Dashboard" }: AppHeaderProps) {
   return (
-    <header className="h-16 shrink-0 flex items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">
+    <header className="h-16 shrink-0 flex items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5 relative z-40">
       {/* Left: Page title */}
       <h1 className="text-sm font-semibold text-white">{title}</h1>
 
