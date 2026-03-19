@@ -1,11 +1,20 @@
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import MarketingNav from "@/app/components/marketing/MarketingNav";
 import Footer from "@/app/components/marketing/Footer";
 
-export default function MarketingLayout({
+export default async function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+  
+  // Redirect authenticated users to the dashboard
+  if (session) {
+    redirect("/dashboard");
+  }
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col relative overflow-hidden">
       {/* Aurora background */}
