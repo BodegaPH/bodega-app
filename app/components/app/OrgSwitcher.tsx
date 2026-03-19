@@ -40,7 +40,7 @@ export default function OrgSwitcher({ activeOrg, userOrgs }: OrgSwitcherProps) {
   // Single org - just display, no dropdown
   if (userOrgs.length <= 1) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5 shadow-sm">
         <Building2 className="w-4 h-4 text-zinc-400" />
         <span className="text-sm font-medium text-zinc-200 truncate max-w-[150px]">
           {activeOrg.name}
@@ -79,7 +79,7 @@ export default function OrgSwitcher({ activeOrg, userOrgs }: OrgSwitcherProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-200 shadow-sm disabled:opacity-50"
       >
         <Building2 className="w-4 h-4 text-zinc-400" />
         <span className="text-sm font-medium text-zinc-200 truncate max-w-[150px]">
@@ -90,7 +90,7 @@ export default function OrgSwitcher({ activeOrg, userOrgs }: OrgSwitcherProps) {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 rounded-xl bg-zinc-900/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl bg-zinc-900/40 backdrop-blur-3xl border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden z-50 origin-top animate-in fade-in zoom-in-95 duration-200">
           <div className="p-2 space-y-1">
             {userOrgs.map((org) => (
               <button

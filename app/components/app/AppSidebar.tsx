@@ -6,12 +6,14 @@ import {
   LayoutDashboard,
   Package,
   ArrowLeftRight,
+  MapPin,
   Settings,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Inventory", href: "/inventory", icon: Package },
+  { label: "Locations", href: "/locations", icon: MapPin },
   { label: "Movements", href: "/movements", icon: ArrowLeftRight },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
