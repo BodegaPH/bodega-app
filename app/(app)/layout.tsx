@@ -55,15 +55,14 @@ export default async function AppLayout({
   const activeOrg = userOrgs.find((o) => o.id === activeOrgId) ?? userOrgs[0];
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden">
-      <AppSidebar />
+    <div className="flex h-screen bg-zinc-950 overflow-hidden text-zinc-300 font-sans selection:bg-blue-500/30">
+      <AppSidebar activeOrg={activeOrg} userOrgs={userOrgs} />
       <div className="flex flex-col flex-1 min-w-0">
         <AppHeader 
           user={session.user} 
-          activeOrg={activeOrg}
-          userOrgs={userOrgs}
+          title="Dashboard"
         />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto bg-zinc-950 p-6">{children}</main>
       </div>
     </div>
   );

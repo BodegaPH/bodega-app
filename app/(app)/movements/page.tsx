@@ -75,12 +75,12 @@ export default async function MovementsPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
+        <div className="flex flex-col gap-6">
+          <div className="w-full">
             <MovementFilters items={items} />
           </div>
 
-          <div className="lg:col-span-3">
+          <div className="w-full">
             <MovementList
               movements={movements.map((m) => ({
                 ...m,
@@ -92,14 +92,6 @@ export default async function MovementsPage({ searchParams }: PageProps) {
                 limit,
                 total,
                 totalPages,
-              }}
-              onPageChange={(newPage: number) => {
-                const newParams = new URLSearchParams();
-                if (itemId) newParams.set("itemId", itemId);
-                if (from) newParams.set("from", from);
-                if (to) newParams.set("to", to);
-                newParams.set("page", newPage.toString());
-                window.location.href = `/movements?${newParams.toString()}`;
               }}
             />
           </div>

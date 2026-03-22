@@ -58,57 +58,57 @@ export default function ItemList({ initialItems }: ItemListProps) {
 
   return (
     <>
-      <div className="rounded-3xl bg-zinc-900/40 backdrop-blur-3xl border border-white/5 ring-1 ring-white/10 p-6 sm:p-8 shadow-2xl">
+      <div className="rounded-lg bg-zinc-900/30 backdrop-blur-3xl border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-white tracking-tight">Items</h2>
-            <p className="mt-1.5 text-sm text-zinc-400">
+            <p className="mt-1.5 text-sm text-zinc-500">
               Manage products and SKUs used for inventory and movements.
             </p>
           </div>
-          <Button onClick={() => setCreateOpen(true)} className="flex items-center gap-2 border-0">
+          <Button onClick={() => setCreateOpen(true)} className="flex items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-none transition-colors border border-transparent">
             <Plus className="h-4 w-4" />
             New Item
           </Button>
         </div>
 
-        <div className="mt-6 flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3">
+        <div className="mt-6 flex items-center justify-between rounded-md border border-white/5 bg-white/[0.02] px-4 py-3">
           <p className="text-sm text-zinc-300">Show inactive items</p>
           <label className="inline-flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               checked={includeInactive}
               onChange={(event) => void handleToggleInactive(event.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-zinc-900 text-blue-500"
+              className="h-4 w-4 rounded border-white/20 bg-zinc-900 text-blue-500 focus:ring-blue-500/50 focus:ring-offset-zinc-950"
             />
-            <span className="text-xs text-zinc-400">Include inactive</span>
+            <span className="text-xs text-zinc-500">Include inactive</span>
           </label>
         </div>
 
         {inlineError && (
-          <div className="mt-6 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <div className="mt-6 rounded-md border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
             {inlineError}
           </div>
         )}
 
         <div className="mt-6">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] px-4 py-16 text-center">
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-blue-500/20 bg-blue-500/10">
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.01] px-4 py-16 text-center">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-md border border-blue-500/20 bg-blue-500/10">
                 <Package className="h-6 w-6 text-blue-400" />
               </div>
-              <h3 className="mb-2 text-lg font-medium text-white">No items found</h3>
-              <p className="mb-8 max-w-sm text-sm leading-relaxed text-zinc-400">
+              <h3 className="mb-2 text-lg font-medium text-zinc-200 tracking-tight">No items found</h3>
+              <p className="mb-8 max-w-sm text-sm leading-relaxed text-zinc-500">
                 Create your first item to prepare for stock movements and inventory tracking.
               </p>
-              <Button onClick={() => setCreateOpen(true)} variant="ghost">
+              <Button onClick={() => setCreateOpen(true)} className="rounded-md border border-white/5 bg-white/5 hover:bg-white/10 text-white shadow-none">
                 Create First Item
               </Button>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="overflow-hidden rounded-lg border border-white/5 bg-white/[0.02]">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-900/70 text-xs uppercase tracking-wide text-zinc-400">
+                <thead className="bg-zinc-900/50 text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
                   <tr>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">SKU</th>
@@ -119,20 +119,20 @@ export default function ItemList({ initialItems }: ItemListProps) {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   {items.map((item) => (
-                    <tr key={item.id} className="border-t border-white/5 text-zinc-200">
-                      <td className="px-4 py-3 font-medium text-white">{item.name}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-zinc-300">{item.sku}</td>
-                      <td className="px-4 py-3 text-zinc-300">{item.unit}</td>
-                      <td className="px-4 py-3 text-zinc-400">{item.category || "-"}</td>
-                      <td className="px-4 py-3 text-zinc-300">{item.lowStockThreshold || "-"}</td>
+                    <tr key={item.id} className="text-zinc-300 hover:bg-white/[0.01] transition-colors">
+                      <td className="px-4 py-3 font-medium text-zinc-200">{item.name}</td>
+                      <td className="px-4 py-3 font-mono tracking-tight text-xs text-zinc-400">{item.sku}</td>
+                      <td className="px-4 py-3 text-zinc-400">{item.unit}</td>
+                      <td className="px-4 py-3 text-zinc-500">{item.category || "-"}</td>
+                      <td className="px-4 py-3 font-mono tracking-tight text-zinc-400">{item.lowStockThreshold || "-"}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${
                             item.isActive
-                              ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
-                              : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-300"
+                              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                              : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
                           }`}
                         >
                           {item.isActive ? "Active" : "Inactive"}
@@ -142,20 +142,20 @@ export default function ItemList({ initialItems }: ItemListProps) {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => setEditTarget(item)}
-                            className="rounded-lg border border-transparent p-2 text-zinc-400 transition-colors hover:border-white/5 hover:bg-white/10 hover:text-white"
+                            className="rounded-md border border-transparent p-2 text-zinc-500 transition-colors hover:border-white/5 hover:bg-white/5 hover:text-zinc-300"
                             title="Edit item"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => setDeactivateTarget(item)}
-                            className="rounded-lg border border-transparent p-2 text-zinc-400 transition-colors hover:border-white/5 hover:bg-white/10 hover:text-white"
+                            className="rounded-md border border-transparent p-2 text-zinc-500 transition-colors hover:border-white/5 hover:bg-white/5 hover:text-zinc-300"
                             title={item.isActive ? "Deactivate item" : "Reactivate item"}
                           >
                             {item.isActive ? (
-                              <ArchiveX className="h-4 w-4 text-rose-400" />
+                              <ArchiveX className="h-4 w-4 text-rose-500 hover:text-rose-400" />
                             ) : (
-                              <RotateCcw className="h-4 w-4 text-blue-400" />
+                              <RotateCcw className="h-4 w-4 text-blue-500 hover:text-blue-400" />
                             )}
                           </button>
                         </div>

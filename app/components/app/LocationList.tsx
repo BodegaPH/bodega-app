@@ -84,17 +84,17 @@ export default function LocationList({ initialLocations }: LocationListProps) {
 
   return (
     <>
-      <div className="rounded-3xl bg-zinc-900/40 backdrop-blur-3xl border border-white/5 ring-1 ring-white/10 p-6 sm:p-8 shadow-2xl">
+      <div className="rounded-lg bg-zinc-900/30 backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-white tracking-tight">Locations</h2>
-            <p className="mt-1.5 text-sm text-zinc-400">
+            <p className="mt-1.5 text-sm text-zinc-500">
               Manage warehouses, shelves, and bins for your organization.
             </p>
           </div>
           <Button 
             onClick={() => setCreateOpen(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] border-0 transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] flex items-center gap-2"
+            className="rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-none border-0 transition-colors flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
             New Location
@@ -102,7 +102,7 @@ export default function LocationList({ initialLocations }: LocationListProps) {
         </div>
 
         {inlineError && (
-          <div className="mt-6 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 flex items-center gap-3">
+          <div className="mt-6 rounded-md border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 flex items-center gap-3">
             <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
             {inlineError}
           </div>
@@ -110,17 +110,17 @@ export default function LocationList({ initialLocations }: LocationListProps) {
 
         <div className="mt-8">
           {locations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
-              <div className="h-14 w-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-5 border border-blue-500/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-white/10 rounded-lg bg-white/[0.01]">
+              <div className="h-14 w-14 rounded-md bg-blue-500/10 flex items-center justify-center mb-5 border border-blue-500/20">
                 <MapPin className="h-6 w-6 text-blue-400" />
               </div>
-              <h3 className="text-lg font-medium text-white mb-2">No locations found</h3>
-              <p className="text-sm text-zinc-400 mb-8 max-w-sm leading-relaxed">
+              <h3 className="text-lg font-medium text-zinc-200 tracking-tight mb-2">No locations found</h3>
+              <p className="text-sm text-zinc-500 mb-8 max-w-sm leading-relaxed">
                 Get started by creating your first location to track inventory, shelves, and bins.
               </p>
               <Button 
                 onClick={() => setCreateOpen(true)}
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/5"
+                className="rounded-md border border-white/5 bg-white/5 hover:bg-white/10 text-white shadow-none"
               >
                 Create First Location
               </Button>
@@ -130,23 +130,23 @@ export default function LocationList({ initialLocations }: LocationListProps) {
               {locations.map((location) => (
                 <div 
                   key={location.id} 
-                  className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-lg bg-white/[0.02] border border-white/5 hover:bg-white/[0.03] transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-white/5 shadow-inner group-hover:bg-zinc-800 transition-colors">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-zinc-900 border border-white/5 group-hover:bg-zinc-800/80 transition-colors">
                       <MapPin className="h-5 w-5 text-zinc-400 group-hover:text-zinc-300" />
                     </div>
                     <div>
                       <div className="flex items-center gap-3">
-                        <h3 className="font-medium text-zinc-100 text-base">{location.name}</h3>
+                        <h3 className="font-medium text-zinc-200 text-base">{location.name}</h3>
                         {location.isDefault && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-300">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-400">
                             <Star className="h-3 w-3 fill-blue-400 text-blue-400" />
                             Default
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-500 mt-1 font-mono">ID: {location.id}</p>
+                      <p className="text-xs text-zinc-500 mt-1 font-mono tracking-tight">ID: {location.id}</p>
                     </div>
                   </div>
                   
@@ -154,7 +154,7 @@ export default function LocationList({ initialLocations }: LocationListProps) {
                     {!location.isDefault && (
                       <button 
                         onClick={() => handleSetDefault(location.id)}
-                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-transparent hover:border-white/5"
+                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-white/5"
                       >
                         <CheckCircle className="h-3.5 w-3.5" />
                         <span>Make Default</span>
@@ -162,14 +162,14 @@ export default function LocationList({ initialLocations }: LocationListProps) {
                     )}
                     <button 
                       onClick={() => setEditTarget(location)}
-                      className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-transparent hover:border-white/5"
+                      className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-white/5"
                       title="Edit location"
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button 
                       onClick={() => setDeleteTarget(location)}
-                      className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/10"
+                      className="p-2 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors border border-transparent hover:border-rose-500/20"
                       title="Delete location"
                     >
                       <Trash2 className="h-4 w-4" />
