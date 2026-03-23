@@ -37,10 +37,6 @@ export default async function AppLayout({
     redirect("/onboarding/create-org");
   }
 
-  // Get current pathname to detect root paths without org ID
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-  
   // Build orgs list with roles
   const userOrgs = memberships.map((m) => ({
     id: m.organization.id,
@@ -51,6 +47,9 @@ export default async function AppLayout({
 
   // Determine active org from URL if present, fallback to session
   let activeOrgId = session.user.activeOrgId;
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  
   const match = pathname.match(/^\/([^\/]+)/);
   if (match && userOrgs.some(o => o.id === match[1])) {
     activeOrgId = match[1];
@@ -59,22 +58,6 @@ export default async function AppLayout({
   // If no activeOrgId or not in user's orgs, default to first org
   if (!activeOrgId || !userOrgs.some((o) => o.id === activeOrgId)) {
     activeOrgId = userOrgs[0].id;
-  }
-
-  // Redirect root paths to active org
-  // Match paths like /dashboard, /items, /inventory (no org ID prefix)
-  if (pathname === "/dashboard") {
-    redirect(`/${activeOrgId}/dashboard`);
-  } else if (pathname === "/items") {
-    redirect(`/${activeOrgId}/items`);
-  } else if (pathname === "/inventory") {
-    redirect(`/${activeOrgId}/inventory`);
-  } else if (pathname === "/locations") {
-    redirect(`/${activeOrgId}/locations`);
-  } else if (pathname === "/movements") {
-    redirect(`/${activeOrgId}/movements`);
-  } else if (pathname === "/settings/organization") {
-    redirect(`/${activeOrgId}/settings/organization`);
   }
 
   const activeOrg = userOrgs.find((o) => o.id === activeOrgId) ?? userOrgs[0];

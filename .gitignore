@@ -24,3 +24,6 @@ Thumbs.db
 .agents/
 .opencode/
 openspec/
+
+# TypeScript
+next-env.d.ts
