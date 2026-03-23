@@ -65,7 +65,7 @@ export default function UserMenu({ user }: UserMenuProps) {
           
           <div className="py-1">
             <Link
-              href="/settings"
+              href="/account/settings"
               onClick={() => setIsOpen(false)}
               className="block px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
             >
