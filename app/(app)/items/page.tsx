@@ -11,12 +11,26 @@ export default async function ItemsPage() {
     redirect("/auth/signin");
   }
 
-  if (!session.user.activeOrgId) {
+  // Fetch user memberships to determine active org
+  const memberships = await prisma.membership.findMany({
+    where: { userId: session.user.id },
+    select: { orgId: true },
+  });
+
+  if (memberships.length === 0) {
     redirect("/onboarding/create-org");
   }
 
+  // Determine active org (same logic as layout)
+  let orgId = session.user.activeOrgId;
+  const userOrgIds = memberships.map((m) => m.orgId);
+  
+  if (!orgId || !userOrgIds.includes(orgId)) {
+    orgId = userOrgIds[0];
+  }
+
   const items = await prisma.item.findMany({
-    where: { orgId: session.user.activeOrgId, isActive: true },
+    where: { orgId, isActive: true },
     select: {
       id: true,
       name: true,

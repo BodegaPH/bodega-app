@@ -4,6 +4,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 
 export default async function OnboardingLayout({
   children,
@@ -15,6 +16,16 @@ export default async function OnboardingLayout({
   // Must be authenticated
   if (!session) {
     redirect("/auth/signin");
+  }
+
+  // Check if user already has organizations
+  const membershipCount = await prisma.membership.count({
+    where: { userId: session.user.id },
+  });
+
+  // If user already has orgs, redirect to dashboard
+  if (membershipCount > 0) {
+    redirect("/dashboard");
   }
 
   return (

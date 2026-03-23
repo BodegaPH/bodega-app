@@ -11,11 +11,28 @@ interface PageProps {
 
 export default async function MovementsPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.activeOrgId) {
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
+  // Fetch user memberships to determine active org
+  const memberships = await prisma.membership.findMany({
+    where: { userId: session.user.id },
+    select: { orgId: true },
+  });
+
+  if (memberships.length === 0) {
     redirect("/onboarding/create-org");
   }
 
-  const orgId = session.user.activeOrgId;
+  // Determine active org (same logic as layout)
+  let orgId = session.user.activeOrgId;
+  const userOrgIds = memberships.map((m) => m.orgId);
+  
+  if (!orgId || !userOrgIds.includes(orgId)) {
+    orgId = userOrgIds[0];
+  }
+
   const params = await searchParams;
 
   const itemId = typeof params.itemId === "string" ? params.itemId : undefined;
