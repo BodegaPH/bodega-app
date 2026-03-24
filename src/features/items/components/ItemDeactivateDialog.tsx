@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/app/components/ui/Button";
-import type { ItemPayload } from "@/app/components/app/ItemForm";
+import type { ItemPayload } from "./ItemForm";
 
 interface ItemDeactivateDialogProps {
   open: boolean;

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { ArchiveX, Package, Pencil, RotateCcw, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/ui/Button";
-import ItemForm, { type ItemPayload } from "@/app/components/app/ItemForm";
-import ItemDeactivateDialog from "@/app/components/app/ItemDeactivateDialog";
+import ItemForm, { type ItemPayload } from "./ItemForm";
+import ItemDeactivateDialog from "./ItemDeactivateDialog";
 
 interface ItemListProps {
   initialItems: ItemPayload[];

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { switchOrg, createOrg } from "@/lib/actions/org";
+import { switchOrg, createOrg } from "@/features/organizations/actions/org";
 import { MembershipRole } from "@prisma/client";
 
 interface Org {

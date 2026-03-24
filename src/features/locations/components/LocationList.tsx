@@ -4,8 +4,8 @@ import { useState } from "react";
 import { MoreHorizontal, Star, MapPin, Edit2, Trash2, CheckCircle, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/ui/Button";
-import LocationForm from "@/app/components/app/LocationForm";
-import LocationDeleteDialog from "@/app/components/app/LocationDeleteDialog";
+import LocationForm from "./LocationForm";
+import LocationDeleteDialog from "./LocationDeleteDialog";
 
 type LocationRecord = {
   id: string;

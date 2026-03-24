@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Package, Plus, ArrowRightLeft } from "lucide-react";
 import Button from "@/app/components/ui/Button";
-import MovementForm from "@/app/components/app/MovementForm";
+import { MovementForm } from "@/features/movements";
 import { useRouter } from "next/navigation";
 
 interface InventoryRow {
