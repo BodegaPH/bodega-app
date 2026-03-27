@@ -35,7 +35,7 @@ out/
 # TypeScript
 # ============================================================
 next-env.d.ts
-*.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # ============================================================
 # Build outputs
