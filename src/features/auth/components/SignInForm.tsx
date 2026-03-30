@@ -130,7 +130,7 @@ export default function SignInForm() {
           </div>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="mt-6 w-full flex justify-center items-center py-2.5 px-4 border border-white/5 rounded-lg bg-zinc-900/30 hover:bg-zinc-800/80 hover:border-white/10 text-sm font-medium text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-600 focus:ring-offset-zinc-950 transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
           >
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Button from "@/src/components/ui/Button";
+import Button from "@/components/ui/Button";
 
 export default function PasswordChangeForm() {
   const [currentPassword, setCurrentPassword] = useState("");

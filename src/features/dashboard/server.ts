@@ -1,4 +1,8 @@
-import { prisma } from "@/lib/db";
+import { getDataCount as getItemCount } from "@/modules/items";
+import { getDataCount as getLocationCount } from "@/modules/locations";
+import { getMovements, getDataCount as getMovementCount } from "@/modules/movements";
+import { getLowStockItems } from "@/modules/inventory";
+import { getOrganizationName } from "@/modules/organizations";
 
 export type DashboardStats = {
   totalItems: number;
@@ -30,53 +34,42 @@ export type DashboardData = {
 };
 
 export async function getDashboardData(orgId: string): Promise<DashboardData> {
-  const [org, totalItems, totalMovements, totalLocations, recentActivity, allStock] =
-    await Promise.all([
-      prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } }),
-      prisma.item.count({ where: { orgId } }),
-      prisma.movement.count({ where: { orgId } }),
-      prisma.location.count({ where: { orgId } }),
-      prisma.movement.findMany({
-        where: { orgId },
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        include: { item: true, location: true },
-      }),
-      prisma.currentStock.findMany({
-        where: { orgId },
-        include: { item: true, location: true },
-      }),
-    ]);
-
-  const lowStock = allStock
-    .filter((stock) => {
-      const qty = Number(stock.quantity);
-      const threshold = stock.item.lowStockThreshold
-        ? Number(stock.item.lowStockThreshold)
-        : 0;
-      return qty <= threshold;
-    })
-    .map((stock) => ({
-      id: stock.id,
-      quantity: stock.quantity.toString(),
-      item: {
-        name: stock.item.name,
-        lowStockThreshold: (stock.item.lowStockThreshold || 0).toString(),
-      },
-      location: { name: stock.location.name },
-    }));
+  const [orgName, totalItems, totalMovements, totalLocations, recentActivity, lowStock] =
+    (await Promise.all([
+      getOrganizationName(orgId),
+      getItemCount(orgId),
+      getMovementCount(orgId),
+      getLocationCount(orgId),
+      getMovements(orgId, { page: 1, limit: 5 }),
+      getLowStockItems(orgId),
+    ])) as [
+      string | null,
+      number,
+      number,
+      number,
+      Awaited<ReturnType<typeof getMovements>>,
+      Awaited<ReturnType<typeof getLowStockItems>>,
+    ];
 
   return {
-    orgName: org?.name ?? "Command Center",
+    orgName: orgName ?? "Command Center",
     stats: { totalItems, totalMovements, totalLocations },
-    recentActivity: recentActivity.map((m) => ({
+    recentActivity: recentActivity.movements.map((m) => ({
       id: m.id,
       type: m.type,
-      quantity: m.quantity.toString(),
-      createdAt: m.createdAt,
-      item: { name: m.item.name },
-      location: { name: m.location.name },
+      quantity: m.quantity,
+      createdAt: new Date(m.createdAt),
+      item: { name: m.item!.name },
+      location: { name: m.location!.name },
     })),
-    lowStock,
+    lowStock: lowStock.map((stock) => ({
+      id: stock.id,
+      quantity: stock.quantity,
+      item: {
+        name: stock.item.name,
+        lowStockThreshold: stock.item.lowStockThreshold ?? "0",
+      },
+      location: { name: stock.location.name },
+    })),
   };
 }

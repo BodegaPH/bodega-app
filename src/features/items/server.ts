@@ -1,4 +1,5 @@
 // Server-only exports - DO NOT import in Client Components
+// Re-exports from @/modules/items
 export {
   ItemApiError,
   createItem,
@@ -7,5 +8,14 @@ export {
   getItemsForSelect,
   reactivateItem,
   updateItem,
-  validateItemForMovement,
-} from "./api/items";
+  validateForMovement as validateItemForMovement,
+  getDataCount,
+} from "@/modules/items";
+
+export type {
+  ItemDTO,
+  ItemReference,
+  ItemValidationResult,
+  CreateItemInput,
+  UpdateItemInput,
+} from "@/modules/items";

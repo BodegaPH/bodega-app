@@ -1,3 +1,5 @@
 // Server-only exports - DO NOT import in Client Components
-export { getInventory } from "./api/inventory";
-export type { InventoryPageData, InventoryRow } from "./api/inventory";
+// Re-exports from @/modules/inventory
+export { getInventory, getDataCount } from "@/modules/inventory";
+
+export type { InventoryPageData, InventoryRow } from "@/modules/inventory";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Package, Plus, ArrowRightLeft } from "lucide-react";
-import Button from "@/src/components/ui/Button";
+import Button from "@/components/ui/Button";
 import { MovementForm } from "@/features/movements";
 import { useRouter } from "next/navigation";
 
