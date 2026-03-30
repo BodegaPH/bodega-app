@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-white text-slate-900 antialiased;
+  }
+}
+
+@layer utilities {
+  @keyframes infinite-scroll-y {
+    0% {
+      transform: translateY(0%);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  .animate-infinite-scroll-y {
+    animation: infinite-scroll-y 15s linear infinite;
+    will-change: transform;
+  }
+}
