@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getDashboardData } from "@/features/dashboard/server";
+import { getDashboardData, getIndicators } from "@/features/dashboard/server";
+import { InventoryAlerts } from "@/features/dashboard/components/InventoryAlerts";
 import type { RecentMovement, LowStockItem } from "@/features/dashboard/server";
 
 function formatQuantity(quantity: string) {
@@ -8,7 +9,10 @@ function formatQuantity(quantity: string) {
 
 export default async function DashboardPage({ params }: { params: Promise<{ orgId: string }> }) {
   const { orgId } = await params;
-  const { orgName, stats, recentActivity, lowStock } = await getDashboardData(orgId);
+  const [{ orgName, stats, recentActivity, lowStock }, indicators] = await Promise.all([
+    getDashboardData(orgId),
+    getIndicators(orgId),
+  ]);
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -22,6 +26,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-medium text-white tracking-tight">{orgName}</h1>
       </div>
+
+      {/* Inventory Alerts */}
+      <InventoryAlerts indicators={indicators} />
 
       {/* Top KPIs Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
