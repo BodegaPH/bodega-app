@@ -3,6 +3,8 @@ import { getDataCount as getLocationCount } from "@/modules/locations";
 import { getMovements, getDataCount as getMovementCount } from "@/modules/movements";
 import { getLowStockItems } from "@/modules/inventory";
 import { getOrganizationName } from "@/modules/organizations";
+import { IndicatorsService, IndicatorsRepository, type InventoryIndicators } from "@/modules/indicators";
+import { prisma } from "@/lib/db";
 
 export type DashboardStats = {
   totalItems: number;
@@ -72,4 +74,13 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
       location: { name: stock.location.name },
     })),
   };
+}
+
+/**
+ * Get inventory indicators for dashboard alerts
+ */
+export async function getIndicators(orgId: string): Promise<InventoryIndicators> {
+  const repo = new IndicatorsRepository(prisma);
+  const service = new IndicatorsService(repo);
+  return service.getInventoryIndicators(orgId);
 }
