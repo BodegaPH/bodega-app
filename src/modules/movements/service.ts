@@ -152,24 +152,30 @@ export async function createMovement(orgId: string, payload: unknown): Promise<M
     }
   })();
 
-  const { movement, newStockQuantity } = await repo.createMovementWithStockUpdate(orgId, input, delta);
-
-  // Validate no negative stock
-  if (newStockQuantity < 0) {
-    throw new InsufficientStockError(
-      input.type === MT.ISSUE
-        ? "Insufficient stock — cannot issue more than available"
-        : "Adjustment would produce negative inventory"
+  try {
+    const { movement } = await repo.createMovementWithStockUpdate(
+      orgId,
+      input,
+      delta
     );
-  }
 
-  return {
-    id: movement.id,
-    type: movement.type as MovementType,
-    quantity: movement.quantity.toString(),
-    reason: movement.reason,
-    createdAt: movement.createdAt.toISOString(),
-  };
+    return {
+      id: movement.id,
+      type: movement.type as MovementType,
+      quantity: movement.quantity.toString(),
+      reason: movement.reason,
+      createdAt: movement.createdAt.toISOString(),
+    };
+  } catch (err) {
+    if (err instanceof Error && err.message === "INSUFFICIENT_STOCK") {
+      throw new InsufficientStockError(
+        input.type === MT.ISSUE
+          ? "Insufficient stock — cannot issue more than available"
+          : "Adjustment would produce negative inventory"
+      );
+    }
+    throw err;
+  }
 }
 
 /**

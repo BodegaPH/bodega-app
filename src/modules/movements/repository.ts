@@ -4,7 +4,7 @@
  */
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import type { CreateMovementInput, GetMovementsFilters, MovementType } from "./types";
+import type { CreateMovementInput, GetMovementsFilters } from "./types";
 
 export async function listMovements(orgId: string, filters: GetMovementsFilters) {
   const page = filters.page ?? 1;
@@ -54,18 +54,35 @@ export async function createMovementWithStockUpdate(
   delta: number
 ) {
   return prisma.$transaction(async (tx) => {
-    // Atomic upsert for stock
-    const [stockResult] = await tx.$queryRaw<[{ quantity: number }]>`
-      INSERT INTO "CurrentStock" ("id", "orgId", "itemId", "locationId", "quantity", "updatedAt")
-      VALUES (gen_random_uuid(), ${orgId}, ${input.itemId}, ${input.locationId}, ${delta}, NOW())
-      ON CONFLICT ("orgId", "itemId", "locationId")
-      DO UPDATE SET 
-        quantity = "CurrentStock".quantity + ${delta},
-        "updatedAt" = NOW()
-      RETURNING quantity::float as quantity
+    // 1. Acquire row lock and get current quantity
+    const [currentStock] = await tx.$queryRaw<[{ quantity: number } | undefined]>`
+      SELECT quantity::float as quantity
+      FROM "CurrentStock"
+      WHERE "orgId" = ${orgId}
+        AND "itemId" = ${input.itemId}
+        AND "locationId" = ${input.locationId}
+      FOR UPDATE
     `;
 
-    // Insert immutable movement record
+    const currentQty = currentStock?.quantity ?? 0;
+    const newQty = currentQty + delta;
+
+    // 2. Validate BEFORE updating
+    if (newQty < 0) {
+      throw new Error("INSUFFICIENT_STOCK");
+    }
+
+    // 3. Upsert with validated quantity
+    await tx.$executeRaw`
+      INSERT INTO "CurrentStock" ("id", "orgId", "itemId", "locationId", "quantity", "updatedAt")
+      VALUES (gen_random_uuid(), ${orgId}, ${input.itemId}, ${input.locationId}, ${newQty}, NOW())
+      ON CONFLICT ("orgId", "itemId", "locationId")
+      DO UPDATE SET 
+        quantity = ${newQty},
+        "updatedAt" = NOW()
+    `;
+
+    // 4. Insert immutable movement
     const movement = await tx.movement.create({
       data: {
         orgId,
@@ -79,7 +96,7 @@ export async function createMovementWithStockUpdate(
       select: { id: true, type: true, quantity: true, reason: true, createdAt: true },
     });
 
-    return { movement, newStockQuantity: stockResult.quantity };
+    return { movement, newStockQuantity: newQty };
   });
 }
 
