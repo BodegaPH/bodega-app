@@ -1,0 +1,6 @@
+{
+  "buildCommand": "SKIP_BUILD_STATIC_GENERATION=1 npm run build",
+  "env": {
+    "SKIP_BUILD_STATIC_GENERATION": "1"
+  }
+}

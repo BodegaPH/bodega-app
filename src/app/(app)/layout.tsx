@@ -13,6 +13,10 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  if (process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return children;
+  }
+
   const session = await getServerSession(authOptions);
 
   if (!session) {

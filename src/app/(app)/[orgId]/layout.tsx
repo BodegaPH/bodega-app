@@ -14,6 +14,10 @@ export default async function OrgLayout({
   children: ReactNode;
   params: Promise<{ orgId: string }>;
 }) {
+  if (process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return children;
+  }
+
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
