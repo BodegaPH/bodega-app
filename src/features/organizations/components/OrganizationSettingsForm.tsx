@@ -51,7 +51,7 @@ export default function OrganizationSettingsForm({ organization, isLastOrg }: Or
 
       setMessage({ type: "success", text: "Organization updated successfully" });
       router.refresh();
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
@@ -100,7 +100,7 @@ export default function OrganizationSettingsForm({ organization, isLastOrg }: Or
 
       // Use hard navigation to ensure session is fully refreshed
       window.location.href = `/${data.nextOrgId}/dashboard`;
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
       setIsDeleting(false);
       setShowDeleteModal(false);

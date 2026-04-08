@@ -55,7 +55,7 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
       setMessage({ type: "success", text: "Profile updated successfully" });
       setCurrentPassword(""); // Clear password field
       router.refresh();
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);

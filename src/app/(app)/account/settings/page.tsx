@@ -11,12 +11,12 @@ export const metadata = {
 
 export default async function AccountSettingsPage() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
     redirect("/auth/signin");
   }
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
   const profile = await getUserProfile(userId);
 
   return (
@@ -55,7 +55,8 @@ export default async function AccountSettingsPage() {
             <h2 className="text-lg font-semibold text-white mb-2">Password</h2>
             <div className="bg-black/20 border border-white/10 rounded-xl p-4 mt-4">
               <p className="text-sm text-zinc-400 leading-relaxed">
-                You signed in with an OAuth provider. Password management is not available for OAuth accounts.
+                You signed in with an OAuth provider. Password management is not
+                available for OAuth accounts.
               </p>
             </div>
           </div>

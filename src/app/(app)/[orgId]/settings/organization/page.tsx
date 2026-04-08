@@ -17,12 +17,12 @@ export default async function OrganizationSettingsPage({
 }) {
   const { orgId } = await params;
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
     redirect("/auth/signin");
   }
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
 
   // Fetch all user memberships (needed for isLastOrg check and role validation)
   const memberships = await prisma.membership.findMany({
@@ -34,7 +34,9 @@ export default async function OrganizationSettingsPage({
     redirect("/");
   }
 
-  const membership = memberships.find((m: { orgId: string }) => m.orgId === orgId);
+  const membership = memberships.find(
+    (m: { orgId: string }) => m.orgId === orgId,
+  );
 
   if (!membership) {
     redirect("/");
@@ -53,7 +55,9 @@ export default async function OrganizationSettingsPage({
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-white">Organization Settings</h1>
+          <h1 className="text-3xl font-bold text-white">
+            Organization Settings
+          </h1>
           <p className="text-sm text-zinc-400 mt-2">
             Manage organization details and members
           </p>
@@ -74,12 +78,12 @@ export default async function OrganizationSettingsPage({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-white">Members</h2>
-                <p className="text-sm text-zinc-400 mt-1">People with access to this organization</p>
+                <p className="text-sm text-zinc-400 mt-1">
+                  People with access to this organization
+                </p>
               </div>
             </div>
-            <MemberList
-              members={members}
-            />
+            <MemberList members={members} />
           </div>
         </div>
       </div>

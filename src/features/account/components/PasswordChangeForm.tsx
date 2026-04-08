@@ -47,7 +47,7 @@ export default function PasswordChangeForm() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
