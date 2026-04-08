@@ -30,7 +30,7 @@ export async function proxy(req: NextRequest) {
   if (PUBLIC_PATHS.includes(pathname)) {
     // If already authenticated, redirect away from auth pages
     if (token) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
   }
@@ -38,11 +38,6 @@ export async function proxy(req: NextRequest) {
   // Protected routes: require auth
   if (!token) {
     return NextResponse.redirect(new URL("/auth/signin", req.url));
-  }
-
-  // Root route: redirect to dashboard
-  if (pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Add pathname header for server components

@@ -50,8 +50,8 @@ export default function CreateOrgPage() {
       activeOrgId: result.orgId,
     });
 
-    // Redirect to dashboard
-    router.push("/dashboard");
+    // Redirect through root so org-scoped routing resolves correctly
+    router.push("/");
   }
 
   return (

@@ -32,7 +32,7 @@ export default async function OnboardingLayout({
 
   // If user already has orgs, redirect to dashboard
   if (membershipCount > 0) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   return (
