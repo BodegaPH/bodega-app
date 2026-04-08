@@ -1,20 +1,39 @@
 import { MovementFilters, MovementList } from "@/features/movements";
 import { getMovements } from "@/features/movements/server";
 import { getItems } from "@/features/items/server";
+import type { MovementDTO } from "@/features/movements/server";
 
 interface PageProps {
   params: Promise<{ orgId: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function MovementsPage({ params, searchParams }: PageProps) {
+/** Parse an ISO date string and return a Date only if it is valid. */
+function parseDateParam(value: unknown): Date | undefined {
+  if (typeof value !== "string" || !value) return undefined;
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? undefined : date;
+}
+
+/** Parse an integer page param, falling back to `fallback` for invalid input. */
+function parsePageParam(value: unknown, fallback: number): number {
+  if (typeof value !== "string") return fallback;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) || parsed < 1 ? fallback : parsed;
+}
+
+export default async function MovementsPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { orgId } = await params;
   const queryParams = await searchParams;
 
-  const itemId = typeof queryParams.itemId === "string" ? queryParams.itemId : undefined;
-  const from = typeof queryParams.from === "string" ? new Date(queryParams.from) : undefined;
-  const to = typeof queryParams.to === "string" ? new Date(queryParams.to) : undefined;
-  const page = Math.max(1, parseInt((queryParams.page as string) ?? "1", 10));
+  const itemId =
+    typeof queryParams.itemId === "string" ? queryParams.itemId : undefined;
+  const from = parseDateParam(queryParams.from);
+  const to = parseDateParam(queryParams.to);
+  const page = parsePageParam(queryParams.page, 1);
   const limit = 50;
 
   const [movementsData, items] = await Promise.all([
@@ -26,7 +45,9 @@ export default async function MovementsPage({ params, searchParams }: PageProps)
     <div className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Movement History</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Movement History
+          </h1>
           <p className="mt-2 text-sm text-zinc-400">
             View the complete immutable ledger of all stock movements.
           </p>
@@ -39,7 +60,7 @@ export default async function MovementsPage({ params, searchParams }: PageProps)
 
           <div className="w-full">
             <MovementList
-              movements={movementsData.movements as any}
+              movements={movementsData.movements as MovementDTO[]}
               pagination={movementsData.pagination}
             />
           </div>

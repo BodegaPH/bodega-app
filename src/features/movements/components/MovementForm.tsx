@@ -35,7 +35,7 @@ export default function MovementForm({
 
     // Pre-select default location
     const defaultLocation = locations.find((loc) => loc.isDefault);
-    setLocationId(defaultLocation?.id ?? (locations[0]?.id ?? ""));
+    setLocationId(defaultLocation?.id ?? locations[0]?.id ?? "");
 
     // Pre-select item if provided
     setItemId(preselectedItemId ?? "");
@@ -68,8 +68,16 @@ export default function MovementForm({
     }
 
     const qtyNum = Number(quantity);
-    if (!Number.isFinite(qtyNum) || qtyNum <= 0) {
+    if (!Number.isFinite(qtyNum)) {
+      setError("Quantity must be a number");
+      return;
+    }
+    if (type !== "ADJUSTMENT" && qtyNum <= 0) {
       setError("Quantity must be a positive number");
+      return;
+    }
+    if (type === "ADJUSTMENT" && qtyNum === 0) {
+      setError("Adjustment quantity cannot be zero");
       return;
     }
 
@@ -98,7 +106,9 @@ export default function MovementForm({
         return;
       }
 
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
 
       if (response.status === 403) {
         setError(data.error ?? "You do not have access to this organization");
@@ -158,7 +168,10 @@ export default function MovementForm({
 
         <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="movement-item" className="text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="movement-item"
+              className="text-sm font-medium text-zinc-300"
+            >
               Item
             </label>
             <select
@@ -177,7 +190,10 @@ export default function MovementForm({
           </div>
 
           <div>
-            <label htmlFor="movement-location" className="text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="movement-location"
+              className="text-sm font-medium text-zinc-300"
+            >
               Location
             </label>
             <select
@@ -196,7 +212,10 @@ export default function MovementForm({
           </div>
 
           <div>
-            <label htmlFor="movement-type" className="text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="movement-type"
+              className="text-sm font-medium text-zinc-300"
+            >
               Movement Type
             </label>
             <select
@@ -212,24 +231,35 @@ export default function MovementForm({
           </div>
 
           <div>
-            <label htmlFor="movement-quantity" className="text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="movement-quantity"
+              className="text-sm font-medium text-zinc-300"
+            >
               Quantity {selectedItem && `(${selectedItem.unit})`}
+              {type === "ADJUSTMENT" && (
+                <span className="ml-1 text-xs text-zinc-500">
+                  (negative to reduce stock)
+                </span>
+              )}
             </label>
             <input
               id="movement-quantity"
               type="number"
-              min="0"
+              min={type === "ADJUSTMENT" ? undefined : "0"}
               step="0.01"
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
               className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              placeholder="10"
+              placeholder={type === "ADJUSTMENT" ? "e.g. -5 or 10" : "10"}
             />
           </div>
 
           {type === "ADJUSTMENT" && (
             <div>
-              <label htmlFor="movement-reason" className="text-sm font-medium text-zinc-300">
+              <label
+                htmlFor="movement-reason"
+                className="text-sm font-medium text-zinc-300"
+              >
                 Reason
               </label>
               <input

@@ -1,10 +1,15 @@
 import { getDataCount as getItemCount } from "@/modules/items";
 import { getDataCount as getLocationCount } from "@/modules/locations";
-import { getMovements, getDataCount as getMovementCount } from "@/modules/movements";
+import {
+  getMovements,
+  getDataCount as getMovementCount,
+} from "@/modules/movements";
 import { getLowStockItems } from "@/modules/inventory";
 import { getOrganizationName } from "@/modules/organizations";
-import { IndicatorsService, IndicatorsRepository, type InventoryIndicators } from "@/modules/indicators";
-import { prisma } from "@/lib/db";
+import {
+  getInventoryIndicators,
+  type InventoryIndicators,
+} from "@/modules/indicators";
 
 export type DashboardStats = {
   totalItems: number;
@@ -36,22 +41,28 @@ export type DashboardData = {
 };
 
 export async function getDashboardData(orgId: string): Promise<DashboardData> {
-  const [orgName, totalItems, totalMovements, totalLocations, recentActivity, lowStock] =
-    (await Promise.all([
-      getOrganizationName(orgId),
-      getItemCount(orgId),
-      getMovementCount(orgId),
-      getLocationCount(orgId),
-      getMovements(orgId, { page: 1, limit: 5 }),
-      getLowStockItems(orgId),
-    ])) as [
-      string | null,
-      number,
-      number,
-      number,
-      Awaited<ReturnType<typeof getMovements>>,
-      Awaited<ReturnType<typeof getLowStockItems>>,
-    ];
+  const [
+    orgName,
+    totalItems,
+    totalMovements,
+    totalLocations,
+    recentActivity,
+    lowStock,
+  ] = (await Promise.all([
+    getOrganizationName(orgId),
+    getItemCount(orgId),
+    getMovementCount(orgId),
+    getLocationCount(orgId),
+    getMovements(orgId, { page: 1, limit: 5 }),
+    getLowStockItems(orgId),
+  ])) as [
+    string | null,
+    number,
+    number,
+    number,
+    Awaited<ReturnType<typeof getMovements>>,
+    Awaited<ReturnType<typeof getLowStockItems>>,
+  ];
 
   return {
     orgName: orgName ?? "Command Center",
@@ -79,8 +90,8 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
 /**
  * Get inventory indicators for dashboard alerts
  */
-export async function getIndicators(orgId: string): Promise<InventoryIndicators> {
-  const repo = new IndicatorsRepository(prisma);
-  const service = new IndicatorsService(repo);
-  return service.getInventoryIndicators(orgId);
+export async function getIndicators(
+  orgId: string,
+): Promise<InventoryIndicators> {
+  return getInventoryIndicators(orgId);
 }

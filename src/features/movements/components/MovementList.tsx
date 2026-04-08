@@ -9,17 +9,20 @@ interface Movement {
   quantity: string;
   reason: string | null;
   createdAt: string;
-  item: {
+  /** Optional — not populated on freshly-created movement responses. */
+  item?: {
     id: string;
     name: string;
     sku: string;
     unit: string;
   };
-  location: {
+  /** Optional — not populated on freshly-created movement responses. */
+  location?: {
     id: string;
     name: string;
   };
-  createdBy: {
+  /** Optional — not populated on freshly-created movement responses. */
+  createdBy?: {
     id: string;
     name: string | null;
     email: string | null;
@@ -38,7 +41,10 @@ interface MovementListProps {
   pagination: Pagination;
 }
 
-export default function MovementList({ movements, pagination }: MovementListProps) {
+export default function MovementList({
+  movements,
+  pagination,
+}: MovementListProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -55,7 +61,9 @@ export default function MovementList({ movements, pagination }: MovementListProp
         <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-md border border-blue-500/20 bg-blue-500/10">
           <ArrowDownUp className="h-6 w-6 text-blue-400" />
         </div>
-        <h3 className="mb-2 text-lg font-medium text-zinc-200 tracking-tight">No movements found</h3>
+        <h3 className="mb-2 text-lg font-medium text-zinc-200 tracking-tight">
+          No movements found
+        </h3>
         <p className="max-w-sm text-sm leading-relaxed text-zinc-500">
           No stock movements match the current filters.
         </p>
@@ -93,7 +101,8 @@ export default function MovementList({ movements, pagination }: MovementListProp
               if (movement.type === "RECEIVE") {
                 typeBadge = {
                   label: "Receive",
-                  classes: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+                  classes:
+                    "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
                 };
               } else if (movement.type === "ISSUE") {
                 typeBadge = {
@@ -108,13 +117,24 @@ export default function MovementList({ movements, pagination }: MovementListProp
               }
 
               return (
-                <tr key={movement.id} className="text-zinc-300 hover:bg-white/[0.01] transition-colors">
-                  <td className="px-4 py-3 text-zinc-400 font-mono tracking-tight text-xs">{formattedDate}</td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-zinc-200">{movement.item.name}</div>
-                    <div className="text-xs text-zinc-500 font-mono tracking-tight">{movement.item.sku}</div>
+                <tr
+                  key={movement.id}
+                  className="text-zinc-300 hover:bg-white/[0.01] transition-colors"
+                >
+                  <td className="px-4 py-3 text-zinc-400 font-mono tracking-tight text-xs">
+                    {formattedDate}
                   </td>
-                  <td className="px-4 py-3 text-zinc-400">{movement.location.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-zinc-200">
+                      {movement.item?.name ?? "—"}
+                    </div>
+                    <div className="text-xs text-zinc-500 font-mono tracking-tight">
+                      {movement.item?.sku ?? ""}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400">
+                    {movement.location?.name ?? "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${typeBadge.classes}`}
@@ -124,12 +144,17 @@ export default function MovementList({ movements, pagination }: MovementListProp
                   </td>
                   <td className="px-4 py-3">
                     <span className="font-mono tracking-tight font-medium text-zinc-200">
-                      {movement.quantity} {movement.item.unit}
+                      {movement.quantity}
+                      {movement.item ? ` ${movement.item.unit}` : ""}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500">{movement.reason || "-"}</td>
+                  <td className="px-4 py-3 text-zinc-500">
+                    {movement.reason || "-"}
+                  </td>
                   <td className="px-4 py-3 text-zinc-400">
-                    {movement.createdBy.name || movement.createdBy.email || "Unknown"}
+                    {movement.createdBy?.name ||
+                      movement.createdBy?.email ||
+                      "Unknown"}
                   </td>
                 </tr>
               );

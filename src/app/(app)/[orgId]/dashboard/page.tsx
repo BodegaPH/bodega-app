@@ -7,12 +7,14 @@ function formatQuantity(quantity: string) {
   return quantity || "0";
 }
 
-export default async function DashboardPage({ params }: { params: Promise<{ orgId: string }> }) {
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ orgId: string }>;
+}) {
   const { orgId } = await params;
-  const [{ orgName, stats, recentActivity, lowStock }, indicators] = await Promise.all([
-    getDashboardData(orgId),
-    getIndicators(orgId),
-  ]);
+  const [{ orgName, stats, recentActivity, lowStock }, indicators] =
+    await Promise.all([getDashboardData(orgId), getIndicators(orgId)]);
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -24,7 +26,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-white tracking-tight">{orgName}</h1>
+        <h1 className="text-xl font-medium text-white tracking-tight">
+          {orgName}
+        </h1>
       </div>
 
       {/* Inventory Alerts */}
@@ -44,7 +48,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
             <p className="text-xs font-medium text-zinc-500 tracking-wider uppercase mb-3">
               {stat.label}
             </p>
-            <p className="text-3xl font-mono tracking-tight text-white">{stat.value}</p>
+            <p className="text-3xl font-mono tracking-tight text-white">
+              {stat.value}
+            </p>
           </div>
         ))}
       </div>
@@ -54,7 +60,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
         {/* Left Col: Recent Activity */}
         <div className="lg:col-span-2 flex flex-col rounded-lg bg-zinc-900/30 border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] overflow-hidden">
           <div className="px-5 py-4 border-b border-white/5 bg-zinc-900/20 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-zinc-300">Recent Activity</h2>
+            <h2 className="text-sm font-medium text-zinc-300">
+              Recent Activity
+            </h2>
           </div>
           <div className="flex-1 overflow-auto">
             {recentActivity.length === 0 ? (
@@ -73,7 +81,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
                   {recentActivity.map((movement: RecentMovement) => (
-                    <tr key={movement.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr
+                      key={movement.id}
+                      className="hover:bg-white/[0.02] transition-colors group"
+                    >
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-2">
                           {movement.type === "RECEIVE" && (
@@ -92,13 +103,29 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex flex-col">
-                          <span className="text-white text-sm">{movement.item.name}</span>
-                          <span className="text-xs text-zinc-500">{movement.location.name}</span>
+                          <span className="text-white text-sm">
+                            {movement.item.name}
+                          </span>
+                          <span className="text-xs text-zinc-500">
+                            {movement.location.name}
+                          </span>
                         </div>
                       </td>
                       <td className="px-5 py-3 text-right font-mono text-sm">
-                        <span className={movement.type === "RECEIVE" ? "text-emerald-400" : movement.type === "ISSUE" ? "text-rose-400" : "text-amber-400"}>
-                          {movement.type === "RECEIVE" ? "+" : movement.type === "ISSUE" ? "-" : ""}
+                        <span
+                          className={
+                            movement.type === "RECEIVE"
+                              ? "text-emerald-400"
+                              : movement.type === "ISSUE"
+                                ? "text-rose-400"
+                                : "text-amber-400"
+                          }
+                        >
+                          {movement.type === "RECEIVE"
+                            ? "+"
+                            : movement.type === "ISSUE"
+                              ? "-"
+                              : ""}
                           {formatQuantity(movement.quantity)}
                         </span>
                       </td>
@@ -127,8 +154,18 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
               {lowStock.length === 0 ? (
                 <div className="p-8 text-center flex flex-col items-center justify-center h-full min-h-[150px]">
                   <p className="text-sm text-emerald-400 font-medium mb-1 flex items-center gap-2 justify-center">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Stock levels healthy
                   </p>
@@ -139,10 +176,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
               ) : (
                 <ul className="divide-y divide-white/5">
                   {lowStock.map((stock: LowStockItem) => (
-                    <li key={stock.id} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <li
+                      key={stock.id}
+                      className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                    >
                       <div className="flex flex-col">
-                        <span className="text-sm text-white font-medium">{stock.item.name}</span>
-                        <span className="text-xs text-zinc-500">{stock.location.name}</span>
+                        <span className="text-sm text-white font-medium">
+                          {stock.item.name}
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {stock.location.name}
+                        </span>
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-sm font-mono text-rose-400 font-medium">
@@ -162,17 +206,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgI
           {/* Quick Actions */}
           <div className="rounded-lg bg-zinc-900/30 border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] overflow-hidden">
             <div className="px-5 py-4 border-b border-white/5 bg-zinc-900/20">
-              <h2 className="text-sm font-medium text-zinc-300">Quick Actions</h2>
+              <h2 className="text-sm font-medium text-zinc-300">
+                Quick Actions
+              </h2>
             </div>
             <div className="p-5 flex flex-col sm:flex-row gap-3">
               <Link
-                href="/inventory"
+                href={`/${orgId}/movements`}
                 className="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] active:scale-[0.98]"
               >
                 Record Movement
               </Link>
               <Link
-                href="/items/new"
+                href={`/${orgId}/items`}
                 className="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-zinc-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all active:scale-[0.98]"
               >
                 Add Item
