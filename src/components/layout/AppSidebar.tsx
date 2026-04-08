@@ -120,7 +120,7 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
         // Switch to new org
         await update({ activeOrgId: result.orgId });
         // Use hard navigation to ensure session is fully refreshed
-        window.location.href = "/dashboard";
+        window.location.href = "/";
       } else {
         setCreateError(result.error);
         setIsCreating(false);

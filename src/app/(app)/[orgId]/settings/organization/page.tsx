@@ -31,13 +31,13 @@ export default async function OrganizationSettingsPage({
   });
 
   if (memberships.length === 0) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   const membership = memberships.find((m: { orgId: string }) => m.orgId === orgId);
 
   if (!membership) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   // Only ORG_ADMIN can access organization settings
