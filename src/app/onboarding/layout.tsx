@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isPlatformAdminRole } from "@/lib/system-role";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,10 @@ export default async function OnboardingLayout({
   // Must be authenticated
   if (!session) {
     redirect("/auth/signin");
+  }
+
+  if (isPlatformAdminRole(session.user.role)) {
+    redirect("/admin");
   }
 
   // Check if user already has organizations

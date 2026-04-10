@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { AmbientBackground } from "@/features/auth";
+import { resolveCanonicalDestination } from "@/lib/redirect-helper";
 
 export default async function AuthLayout({
   children,
@@ -11,7 +12,10 @@ export default async function AuthLayout({
   // Redirect authenticated users to dashboard
   const session = await getServerSession(authOptions);
   if (session) {
-    redirect("/");
+    const destination = await resolveCanonicalDestination({ currentPath: "/auth/signin" });
+    if (destination.routeClass !== "auth") {
+      redirect(destination.destination);
+    }
   }
   
   return (

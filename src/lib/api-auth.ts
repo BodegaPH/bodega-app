@@ -5,6 +5,14 @@ import { Session } from "next-auth";
 import { prisma } from "@/lib/db";
 import type { MembershipRole } from "@/modules/organizations/types";
 import { apiError } from "@/lib/api-errors";
+import { isPlatformAdminRole } from "@/lib/system-role";
+import {
+  PLATFORM_ADMIN_STEP_UP_COOKIE,
+  SensitivePlatformAdminAction,
+  isPrivilegedStepUpRevoked,
+  logPlatformSecurityAudit,
+  validateStepUpToken,
+} from "@/lib/platform-admin-security";
 
 type AuthResult =
   | { success: true; session: Session }
@@ -18,6 +26,23 @@ type AuthWithOrgResult =
       orgRole: MembershipRole;
     }
   | { success: false; response: NextResponse };
+
+type AuthPlatformAdminResult =
+  | {
+      success: true;
+      session: Session;
+    }
+  | { success: false; response: NextResponse };
+
+type ElevatedPlatformAdminResult =
+  | {
+      success: true;
+      session: Session;
+    }
+  | {
+      success: false;
+      response: NextResponse;
+    };
 
 interface AuthWithOrgOptions {
   allowedRoles?: MembershipRole[];
@@ -113,5 +138,129 @@ export async function requireAuthWithOrg(
     session,
     orgId: activeOrgId,
     orgRole: membership.role,
+  };
+}
+
+export function isPlatformAdminSession(session: Session): boolean {
+  return isPlatformAdminRole(session.user.role);
+}
+
+export async function requirePlatformAdminAuth(): Promise<AuthPlatformAdminResult> {
+  const auth = await requireAuth();
+  if (!auth.success) {
+    return auth;
+  }
+
+  if (!isPlatformAdminSession(auth.session)) {
+    logPlatformSecurityAudit({
+      event: "platform_admin_authz_denied",
+      actorUserId: auth.session.user.id,
+      outcome: "deny",
+      reason: "not_platform_admin",
+    });
+    return {
+      success: false,
+      response: apiError("Forbidden", 403),
+    };
+  }
+
+  return {
+    success: true,
+    session: auth.session,
+  };
+}
+
+export async function requireElevatedPlatformAdminAuth(
+  request: Request,
+  action: SensitivePlatformAdminAction,
+): Promise<ElevatedPlatformAdminResult> {
+  const auth = await requirePlatformAdminAuth();
+  if (!auth.success) {
+    return auth;
+  }
+
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const parsedCookies = new Map(
+    cookieHeader
+      .split(";")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const index = part.indexOf("=");
+        const key = index >= 0 ? part.slice(0, index) : part;
+        const value = index >= 0 ? part.slice(index + 1) : "";
+        let decodedValue = value;
+        try {
+          decodedValue = decodeURIComponent(value);
+        } catch {
+          decodedValue = value;
+        }
+        return [key, decodedValue] as const;
+      }),
+  );
+
+  const stepUpToken = parsedCookies.get(PLATFORM_ADMIN_STEP_UP_COOKIE);
+  const validation = validateStepUpToken(stepUpToken);
+  if (!validation.valid) {
+    logPlatformSecurityAudit({
+      event: "platform_admin_step_up_failed",
+      actorUserId: auth.session.user.id,
+      action,
+      path: new URL(request.url).pathname,
+      outcome: "deny",
+      reason: `step_up_${validation.reason}`,
+    });
+    return {
+      success: false,
+      response: apiError("Step-up authentication required", 401),
+    };
+  }
+
+  if (validation.payload.userId !== auth.session.user.id) {
+    logPlatformSecurityAudit({
+      event: "platform_admin_step_up_failed",
+      actorUserId: auth.session.user.id,
+      action,
+      path: new URL(request.url).pathname,
+      outcome: "deny",
+      reason: "step_up_subject_mismatch",
+    });
+    return {
+      success: false,
+      response: apiError("Step-up authentication required", 401),
+    };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: auth.session.user.id },
+    select: { updatedAt: true },
+  });
+
+  if (!dbUser || isPrivilegedStepUpRevoked(validation.payload.issuedAt, dbUser.updatedAt)) {
+    logPlatformSecurityAudit({
+      event: "platform_admin_step_up_failed",
+      actorUserId: auth.session.user.id,
+      action,
+      path: new URL(request.url).pathname,
+      outcome: "deny",
+      reason: "step_up_revoked",
+    });
+    return {
+      success: false,
+      response: apiError("Step-up authentication required", 401),
+    };
+  }
+
+  logPlatformSecurityAudit({
+    event: "platform_admin_sensitive_action_executed",
+    actorUserId: auth.session.user.id,
+    action,
+    path: new URL(request.url).pathname,
+    outcome: "allow",
+  });
+
+  return {
+    success: true,
+    session: auth.session,
   };
 }

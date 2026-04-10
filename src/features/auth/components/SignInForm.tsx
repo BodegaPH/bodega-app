@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -12,7 +12,9 @@ export default function SignInForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +25,14 @@ export default function SignInForm() {
       const res = await signIn("credentials", {
         email,
         password,
+        callbackUrl,
         redirect: false,
       });
 
       if (res?.error) {
         setError("Invalid email or password. Please check your credentials and try again.");
       } else {
-        router.push("/");
+        router.push(res?.url || "/");
       }
     } catch (err) {
       console.error(err);
@@ -130,7 +133,7 @@ export default function SignInForm() {
           </div>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn("google", { callbackUrl })}
             className="mt-6 w-full flex justify-center items-center py-2.5 px-4 border border-white/5 rounded-lg bg-zinc-900/30 hover:bg-zinc-800/80 hover:border-white/10 text-sm font-medium text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-600 focus:ring-offset-zinc-950 transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
           >
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">

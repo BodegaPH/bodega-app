@@ -64,7 +64,7 @@ The MVP focuses on correctness, auditability, and usability — not advanced sup
 - Can belong to multiple organizations
 - Performs item and stock operations
 
-### System Admin (Secondary)
+### Platform Admin (Secondary)
 
 - Platform-level overseer (not tied to a single organization)
 - Monitors users, activity, and inventory health across organizations
@@ -79,7 +79,7 @@ The MVP focuses on correctness, auditability, and usability — not advanced sup
 - SaaS web app (main app only)
 - Authentication and organization switching
 - Organization-level roles (Org Admin, Org User)
-- System Admin role (platform-level monitoring)
+- Platform Admin role (platform-level monitoring)
 - Item management
 - Ledger-based inventory movements
 - Inventory views and reports
@@ -105,14 +105,14 @@ The MVP focuses on correctness, auditability, and usability — not advanced sup
 
 - Users can join multiple organizations
 - Role is assigned per organization (Org Admin or Org User)
-- System Admin is a separate global role (not per-organization)
+- Platform Admin is a separate global role (not per-organization)
 - Users can switch active organization context
 
 ---
 
 ### 5.1.1 Role Matrix (MVP)
 
-| Capability | Org User | Org Admin | System Admin |
+| Capability | Org User | Org Admin | Platform Admin |
 | --- | --- | --- | --- |
 | Create/edit/deactivate items | Yes | Yes | No |
 | Record stock movements | Yes | Yes | No |
@@ -168,7 +168,7 @@ The MVP focuses on correctness, auditability, and usability — not advanced sup
 
 ---
 
-### 5.6 System Admin Dashboard
+### 5.6 Platform Admin Dashboard
 
 **Monitoring-focused only**
 
@@ -194,7 +194,7 @@ The MVP focuses on correctness, auditability, and usability — not advanced sup
 ## 6. Non-Functional Requirements
 
 - Authentication required for all access
-- Organization-level data isolation (System Admin has read-only cross-org visibility)
+- Organization-level data isolation (Platform Admin has read-only cross-org visibility)
 - Atomic inventory transactions
 - Audit trail for all movements
 - Acceptable performance for MVP-scale datasets

@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AppSidebar from "@/components/layout/AppSidebar";
 import AppHeader from "@/components/layout/AppHeader";
+import { isPlatformAdminRole } from "@/lib/system-role";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,10 @@ export default async function AppLayout({
 
   if (!session) {
     redirect("/auth/signin");
+  }
+
+  if (isPlatformAdminRole(session.user.role)) {
+    redirect("/admin");
   }
 
   // Fetch user's org memberships

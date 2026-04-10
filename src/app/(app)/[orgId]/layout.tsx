@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ReactNode } from "react";
 import { OrgProvider } from "@/features/shared/OrgContext";
+import { isPlatformAdminRole } from "@/lib/system-role";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,10 @@ export default async function OrgLayout({
   
   if (!session?.user) {
     redirect("/auth/signin");
+  }
+
+  if (isPlatformAdminRole(session.user.role)) {
+    redirect("/admin");
   }
 
   const { orgId } = await params;
