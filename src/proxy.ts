@@ -21,6 +21,14 @@ function isOrgPath(pathname: string) {
   return segments.length >= 2 && segments[0] !== "auth" && segments[0] !== "api" && segments[0] !== "onboarding" && segments[0] !== "admin";
 }
 
+export function isSafeCallbackUrl(callbackUrl: string | null): callbackUrl is string {
+  if (!callbackUrl) return false;
+  if (!callbackUrl.startsWith("/")) return false;
+  if (callbackUrl.startsWith("//")) return false;
+  if (callbackUrl.startsWith("/auth")) return false;
+  return true;
+}
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -49,6 +57,11 @@ export async function proxy(req: NextRequest) {
   if (PUBLIC_PATHS.includes(pathname)) {
     // If already authenticated, redirect away from auth pages
     if (token) {
+      const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
+      if (isSafeCallbackUrl(callbackUrl)) {
+        return NextResponse.redirect(new URL(callbackUrl, req.url));
+      }
+
       const target = isPlatformAdmin ? "/admin" : "/";
       if (pathname !== target) {
         return NextResponse.redirect(new URL(target, req.url));
@@ -60,7 +73,8 @@ export async function proxy(req: NextRequest) {
   // Protected routes: require auth
   if (!token) {
     const signInUrl = new URL("/auth/signin", req.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
+    const callbackUrl = `${pathname}${req.nextUrl.search}`;
+    signInUrl.searchParams.set("callbackUrl", callbackUrl);
     return NextResponse.redirect(signInUrl);
   }
 

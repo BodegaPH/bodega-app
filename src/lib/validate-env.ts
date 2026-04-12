@@ -29,6 +29,15 @@ export function validateEnv() {
   // Warnings for optional but recommended variables
   const warnings: string[] = [];
 
+  const emailProvider = process.env.EMAIL_PROVIDER?.trim().toLowerCase();
+  if (emailProvider === "mailjet") {
+    if (!process.env.MAILJET_API_KEY || !process.env.MAILJET_API_SECRET || !process.env.MAILJET_FROM_EMAIL) {
+      warnings.push(
+        "EMAIL_PROVIDER=mailjet is set but MAILJET_API_KEY/MAILJET_API_SECRET/MAILJET_FROM_EMAIL are missing. Invite email delivery will fail."
+      );
+    }
+  }
+
   if (
     !process.env.GOOGLE_CLIENT_ID ||
     !process.env.GOOGLE_CLIENT_SECRET
