@@ -4,9 +4,15 @@
 export {
   getMovements,
   createMovement,
+  exportMovementsCsv,
   getDataCount,
   MovementApiError,
   InsufficientStockError,
+  InvalidMovementExportFiltersError,
+  MovementExportCapExceededError,
+  MovementExportTimeoutError,
+  MovementExportRateLimitedError,
+  MovementExportServerError,
   MovementType,
 } from "./service";
 
@@ -15,4 +21,9 @@ export type {
   CreateMovementInput,
   GetMovementsFilters,
   ListMovementsResponse,
+  MovementExportMode,
+  MovementExportFilters,
+  MovementExportRequest,
+  MovementExportSuccess,
+  MovementExportErrorCode,
 } from "./types";

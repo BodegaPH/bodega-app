@@ -54,3 +54,32 @@ export type ListMovementsResponse = {
     totalPages: number;
   };
 };
+
+export type MovementExportMode = "filtered" | "all";
+
+export type MovementExportFilters = {
+  itemId?: string;
+  locationId?: string;
+  from?: string;
+  to?: string;
+};
+
+export type MovementExportRequest = {
+  mode: MovementExportMode;
+  filters?: MovementExportFilters;
+  confirmedAll?: boolean;
+};
+
+export type MovementExportErrorCode =
+  | "INVALID_FILTERS"
+  | "EXPORT_CAP_EXCEEDED"
+  | "EXPORT_TIMEOUT"
+  | "RATE_LIMITED"
+  | "SERVER_ERROR";
+
+export type MovementExportSuccess = {
+  filename: string;
+  content: string;
+  rowCount: number;
+  generatedAt: string;
+};

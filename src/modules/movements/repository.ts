@@ -6,12 +6,15 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { CreateMovementInput, GetMovementsFilters } from "./types";
 
-export async function listMovements(orgId: string, filters: GetMovementsFilters) {
-  const page = filters.page ?? 1;
-  const limit = filters.limit ?? 50;
-  const skip = (page - 1) * limit;
+type MovementExportQueryFilters = {
+  itemId?: string;
+  locationId?: string;
+  from?: Date;
+  to?: Date;
+};
 
-  const where: Prisma.MovementWhereInput = {
+function buildMovementWhere(orgId: string, filters: MovementExportQueryFilters): Prisma.MovementWhereInput {
+  return {
     orgId,
     ...(filters.itemId ? { itemId: filters.itemId } : {}),
     ...(filters.locationId ? { locationId: filters.locationId } : {}),
@@ -24,6 +27,14 @@ export async function listMovements(orgId: string, filters: GetMovementsFilters)
         }
       : {}),
   };
+}
+
+export async function listMovements(orgId: string, filters: GetMovementsFilters) {
+  const page = filters.page ?? 1;
+  const limit = filters.limit ?? 50;
+  const skip = (page - 1) * limit;
+
+  const where = buildMovementWhere(orgId, filters);
 
   const [movements, total] = await Promise.all([
     prisma.movement.findMany({
@@ -102,4 +113,26 @@ export async function createMovementWithStockUpdate(
 
 export async function countMovements(orgId: string): Promise<number> {
   return prisma.movement.count({ where: { orgId } });
+}
+
+export async function listMovementsForExport(
+  orgId: string,
+  filters: MovementExportQueryFilters,
+  take: number,
+) {
+  return prisma.movement.findMany({
+    where: buildMovementWhere(orgId, filters),
+    select: {
+      id: true,
+      type: true,
+      quantity: true,
+      reason: true,
+      createdAt: true,
+      item: { select: { id: true, name: true, sku: true, unit: true } },
+      location: { select: { id: true, name: true } },
+      createdBy: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take,
+  });
 }

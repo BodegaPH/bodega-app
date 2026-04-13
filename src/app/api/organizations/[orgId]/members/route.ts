@@ -12,6 +12,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function parseRole(value: unknown): "ORG_ADMIN" | "ORG_USER" | null {
+  if (value === "ORG_ADMIN" || value === "ORG_USER") {
+    return value;
+  }
+
+  return null;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> }
@@ -74,7 +82,11 @@ export async function POST(
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const role = body.role === "ORG_ADMIN" ? "ORG_ADMIN" : "ORG_USER";
+    const role = parseRole(body.role);
+    if (!role) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
     const member = await addMember(requestedOrgId, { email: body.email, role });
 
     return NextResponse.json({ member }, { status: 201 });
@@ -113,11 +125,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const member = await updateMemberRole(
-      requestedOrgId,
-      body.userId,
-      body.role === "ORG_ADMIN" ? "ORG_ADMIN" : "ORG_USER"
-    );
+    const role = parseRole(body.role);
+    if (!role) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+
+    const member = await updateMemberRole(requestedOrgId, body.userId, role);
 
     return NextResponse.json({ member });
   } catch (error) {
