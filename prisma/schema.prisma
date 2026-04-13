@@ -25,6 +25,13 @@ enum MovementType {
   ADJUSTMENT
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -37,6 +44,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   memberships   Membership[]
+  sentInvitations OrganizationInvitation[] @relation("OrganizationInvitationInviter")
   movements     Movement[]   @relation("MovementCreatedBy")
   ownedOrganizations Organization[] @relation("OrganizationOwner")
 
@@ -53,6 +61,7 @@ model Organization {
 
   owner         User          @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   memberships   Membership[]
+  invitations   OrganizationInvitation[]
   items         Item[]
   locations     Location[]
   movements     Movement[]
@@ -62,6 +71,29 @@ model Organization {
   updatedAt     DateTime      @updatedAt
 
   @@index([ownerId])
+}
+
+model OrganizationInvitation {
+  id            String           @id @default(cuid())
+  orgId         String
+  inviterUserId String
+  invitedEmail  String
+  role          MembershipRole
+  tokenHash     String           @unique
+  status        InvitationStatus @default(PENDING)
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  organization  Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inviter       User             @relation("OrganizationInvitationInviter", fields: [inviterUserId], references: [id], onDelete: Restrict)
+
+  @@index([orgId, status, expiresAt])
+  @@index([orgId, invitedEmail])
+  @@index([inviterUserId, createdAt])
+  @@index([invitedEmail, status, createdAt])
 }
 
 model Membership {

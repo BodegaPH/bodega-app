@@ -4,14 +4,32 @@ import { authOptions } from "@/lib/auth";
 import { AmbientBackground } from "@/features/auth";
 import { resolveCanonicalDestination } from "@/lib/redirect-helper";
 
+function getSafeCallbackUrl(
+  callbackUrl: string | string[] | undefined,
+): string | null {
+  if (typeof callbackUrl !== "string") return null;
+  if (!callbackUrl.startsWith("/")) return null;
+  if (callbackUrl.startsWith("//")) return null;
+  if (callbackUrl.startsWith("/auth")) return null;
+  return callbackUrl;
+}
+
 export default async function AuthLayout({
   children,
+  searchParams,
 }: {
   children: React.ReactNode;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // Redirect authenticated users to dashboard
   const session = await getServerSession(authOptions);
   if (session) {
+    const resolvedSearchParams = searchParams ? await searchParams : undefined;
+    const callbackUrl = getSafeCallbackUrl(resolvedSearchParams?.callbackUrl);
+    if (callbackUrl) {
+      redirect(callbackUrl);
+    }
+
     const destination = await resolveCanonicalDestination({ currentPath: "/auth/signin" });
     if (destination.routeClass !== "auth") {
       redirect(destination.destination);

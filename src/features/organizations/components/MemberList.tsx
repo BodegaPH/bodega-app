@@ -1,6 +1,7 @@
 "use client";
 
 import { MembershipRole } from "@prisma/client";
+import Button from "@/components/ui/Button";
 
 interface Member {
   id: string;
@@ -12,9 +13,19 @@ interface Member {
 
 interface MemberListProps {
   members: Member[];
+  canManage?: boolean;
+  onRoleChange?: (userId: string, role: MembershipRole) => void;
+  onRemove?: (userId: string) => void;
+  loadingUserId?: string | null;
 }
 
-export default function MemberList({ members }: MemberListProps) {
+export default function MemberList({
+  members,
+  canManage = false,
+  onRoleChange,
+  onRemove,
+  loadingUserId,
+}: MemberListProps) {
   if (members.length === 0) {
     return (
       <div className="text-center py-12 px-4 rounded-xl border border-dashed border-white/10 bg-white/[0.01]">
@@ -55,6 +66,11 @@ export default function MemberList({ members }: MemberListProps) {
             <th className="text-left text-[11px] uppercase tracking-wider font-semibold text-zinc-500 pb-3">
               Role
             </th>
+            {canManage && (
+              <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-zinc-500 pb-3">
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
@@ -82,16 +98,47 @@ export default function MemberList({ members }: MemberListProps) {
               </td>
               <td className="py-4 text-sm text-zinc-400">{member.email}</td>
               <td className="py-4">
-                <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                    member.role === "ORG_ADMIN"
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                      : "bg-zinc-800/50 text-zinc-400 border border-white/5"
-                  }`}
-                >
-                  {member.role === "ORG_ADMIN" ? "Admin" : "Member"}
-                </span>
+                {canManage && !member.isOwner && onRoleChange ? (
+                  <select
+                    value={member.role}
+                    onChange={(e) =>
+                      onRoleChange(member.id, e.target.value as MembershipRole)
+                    }
+                    disabled={loadingUserId === member.id}
+                    className="px-2.5 py-1 rounded-lg text-xs bg-zinc-900 border border-white/10 text-zinc-200"
+                  >
+                    <option value="ORG_USER">Member</option>
+                    <option value="ORG_ADMIN">Admin</option>
+                  </select>
+                ) : (
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      member.role === "ORG_ADMIN"
+                        ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        : "bg-zinc-800/50 text-zinc-400 border border-white/5"
+                    }`}
+                  >
+                    {member.role === "ORG_ADMIN" ? "Admin" : "Member"}
+                  </span>
+                )}
               </td>
+              {canManage && (
+                <td className="py-4 text-right">
+                  {member.isOwner ? (
+                    <span className="text-xs text-zinc-500">Owner protected</span>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={loadingUserId === member.id}
+                      onClick={() => onRemove?.(member.id)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

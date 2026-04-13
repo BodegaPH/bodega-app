@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,14 @@ export default function SignUpForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const inviteToken = searchParams.get("inviteToken") || (() => {
+    const queryIndex = callbackUrl.indexOf("?");
+    if (queryIndex === -1) return null;
+    const query = callbackUrl.slice(queryIndex + 1);
+    return new URLSearchParams(query).get("token");
+  })();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +31,7 @@ export default function SignUpForm() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, inviteToken }),
       });
 
       const data = await res.json();
@@ -35,6 +44,52 @@ export default function SignUpForm() {
             : data.error?.message ||
               "Unable to create account. Please try again.";
         throw new Error(errorMessage);
+      }
+
+      if (inviteToken) {
+        const signInRes = await signIn("credentials", {
+          email,
+          password,
+          callbackUrl,
+          redirect: false,
+        });
+
+        if (!signInRes?.error) {
+          const acceptRes = await fetch("/api/invite/accept", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: inviteToken }),
+          });
+
+          if (!acceptRes.ok) {
+            let message = "Unable to accept invitation. Please sign in and try again.";
+            try {
+              const acceptData = await acceptRes.json();
+              if (typeof acceptData?.error === "string") {
+                message = acceptData.error;
+              } else if (typeof acceptData?.error?.message === "string") {
+                message = acceptData.error.message;
+              }
+            } catch {
+              // fallback message
+            }
+            throw new Error(message);
+          }
+
+          const accepted = await acceptRes.json();
+          try {
+            await fetch("/api/organizations/select", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orgId: accepted.orgId }),
+            });
+          } catch {
+            // best effort; redirect still works without this
+          }
+
+          router.push(`/${accepted.orgId}/dashboard?inviteAccepted=1`);
+          return;
+        }
       }
 
       router.push("/auth/signin?registered=true");
@@ -159,7 +214,7 @@ export default function SignUpForm() {
 
         <div className="mt-6 text-center">
           <Link
-            href="/auth/signin"
+            href={inviteToken ? `/auth/signin?inviteToken=${encodeURIComponent(inviteToken)}&callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin"}
             className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-300 underline-offset-4"
           >
             Sign in instead

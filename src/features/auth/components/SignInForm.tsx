@@ -15,6 +15,12 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const inviteToken = searchParams.get("inviteToken") || (() => {
+    const queryIndex = callbackUrl.indexOf("?");
+    if (queryIndex === -1) return null;
+    const query = callbackUrl.slice(queryIndex + 1);
+    return new URLSearchParams(query).get("token");
+  })();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +38,29 @@ export default function SignInForm() {
       if (res?.error) {
         setError("Invalid email or password. Please check your credentials and try again.");
       } else {
+        if (inviteToken) {
+          const acceptRes = await fetch("/api/invite/accept", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: inviteToken }),
+          });
+
+          if (acceptRes.ok) {
+            const accepted = await acceptRes.json();
+            try {
+              await fetch("/api/organizations/select", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orgId: accepted.orgId }),
+              });
+            } catch {
+              // best effort; redirect still works without this
+            }
+            router.push(`/${accepted.orgId}/dashboard?inviteAccepted=1`);
+            return;
+          }
+        }
+
         router.push(res?.url || "/");
       }
     } catch (err) {
@@ -151,7 +180,7 @@ export default function SignInForm() {
         <p className="text-sm text-zinc-400">
           Don&apos;t have an account?{" "}
           <Link
-            href="/auth/signup"
+            href={inviteToken ? `/auth/signup?inviteToken=${encodeURIComponent(inviteToken)}&callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signup"}
             className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-300 underline-offset-4"
           >
             Create one

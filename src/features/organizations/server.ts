@@ -15,6 +15,16 @@ export {
   updateOrganization,
 } from "@/modules/organizations";
 
+export {
+  acceptInvitationByToken,
+  createInvitation,
+  getInvitePreviewByToken,
+  listPendingInvitations,
+  resendInvitation,
+  revokeInvitation,
+  InvitationsApiError,
+} from "@/modules/invitations";
+
 export type {
   OrganizationMember,
   OrganizationOwner,

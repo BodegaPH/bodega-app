@@ -1,8 +1,12 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getMembers, getOrganizationOwner } from "@/features/organizations/server";
-import { MemberList, OrganizationSettingsForm } from "@/features/organizations";
+import {
+  getMembers,
+  getOrganizationOwner,
+  listPendingInvitations,
+} from "@/features/organizations/server";
+import { OrganizationSettingsForm } from "@/features/organizations";
 import { prisma } from "@/lib/db";
 
 export const metadata = {
@@ -57,6 +61,7 @@ export default async function OrganizationSettingsPage({
   // Fetch organization members via feature server module
   const members = await getMembers(orgId);
   const owner = await getOrganizationOwner(orgId);
+  const invites = await listPendingInvitations(orgId);
 
   return (
     <div className="min-h-screen bg-zinc-950 p-8">
@@ -82,20 +87,9 @@ export default async function OrganizationSettingsPage({
             owner={owner}
             currentUserId={userId}
             members={members}
+            invites={invites}
           />
 
-          {/* Members Section */}
-          <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Members</h2>
-                <p className="text-sm text-zinc-400 mt-1">
-                  People with access to this organization
-                </p>
-              </div>
-            </div>
-            <MemberList members={members} />
-          </div>
         </div>
       </div>
     </div>

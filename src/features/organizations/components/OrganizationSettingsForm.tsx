@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Button from "@/components/ui/Button";
+import MemberList from "./MemberList";
 
 interface OrganizationSettingsFormProps {
   organization: {
@@ -24,6 +25,13 @@ interface OrganizationSettingsFormProps {
     role: "ORG_ADMIN" | "ORG_USER";
     isOwner: boolean;
   }>;
+  invites: Array<{
+    id: string;
+    invitedEmail: string;
+    role: "ORG_ADMIN" | "ORG_USER";
+    expiresAt: Date | string;
+    inviter?: { name: string | null; email: string | null };
+  }>;
 }
 
 export default function OrganizationSettingsForm({
@@ -32,6 +40,7 @@ export default function OrganizationSettingsForm({
   owner,
   currentUserId,
   members,
+  invites,
 }: OrganizationSettingsFormProps) {
   const [name, setName] = useState(organization.name);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,8 +57,12 @@ export default function OrganizationSettingsForm({
     movements: number;
     stock?: number;
   } | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"ORG_ADMIN" | "ORG_USER">("ORG_USER");
+  const [inviteRetryAfter, setInviteRetryAfter] = useState<number | null>(null);
+  const [memberActionUserId, setMemberActionUserId] = useState<string | null>(null);
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, update } = useSession();
   const isOwner = owner.id === currentUserId;
   const transferCandidates = members.filter((member) => member.id !== owner.id);
 
@@ -160,6 +173,127 @@ export default function OrganizationSettingsForm({
     }
   }
 
+  async function handleCreateInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage(null);
+    setInviteRetryAfter(null);
+    setIsLoading(true);
+
+    try {
+      const trimmedEmail = inviteEmail.trim();
+      const normalizedEmail = trimmedEmail.toLowerCase();
+      const currentUserEmail = session?.user?.email?.trim().toLowerCase();
+      if (!trimmedEmail) {
+        setMessage({ type: "error", text: "Email is required" });
+        return;
+      }
+
+      if (currentUserEmail && normalizedEmail === currentUserEmail) {
+        setMessage({ type: "error", text: "You cannot send an invitation to your own email" });
+        return;
+      }
+
+      const existingMember = members.some(
+        (member) => member.email?.trim().toLowerCase() === normalizedEmail,
+      );
+      if (existingMember) {
+        setMessage({ type: "error", text: "User is already a member of this organization" });
+        return;
+      }
+
+      const res = await fetch(`/api/organizations/${organization.id}/invites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, role: inviteRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const retryAfter = Number(res.headers.get("Retry-After") || 0);
+        if (retryAfter > 0) {
+          setInviteRetryAfter(retryAfter);
+        }
+        setMessage({ type: "error", text: data.error?.message || data.error || "Failed to invite member" });
+        return;
+      }
+
+      setInviteEmail("");
+      setMessage({ type: "success", text: "Invitation created successfully" });
+      router.refresh();
+    } catch {
+      setMessage({ type: "error", text: "Unable to create invitation right now." });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleResendInvite(inviteId: string) {
+    setMessage(null);
+    const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const retryAfter = Number(res.headers.get("Retry-After") || 0);
+      setInviteRetryAfter(retryAfter > 0 ? retryAfter : null);
+      setMessage({ type: "error", text: data.error?.message || data.error || "Failed to resend invite" });
+      return;
+    }
+    setMessage({ type: "success", text: "Invitation resent" });
+    router.refresh();
+  }
+
+  async function handleRevokeInvite(inviteId: string) {
+    setMessage(null);
+    const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage({ type: "error", text: data.error?.message || data.error || "Failed to revoke invite" });
+      return;
+    }
+    setMessage({ type: "success", text: "Invitation revoked" });
+    router.refresh();
+  }
+
+  async function handleRoleChange(userId: string, role: "ORG_ADMIN" | "ORG_USER") {
+    setMemberActionUserId(userId);
+    setMessage(null);
+    const res = await fetch(`/api/organizations/${organization.id}/members`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, role }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage({ type: "error", text: data.error || "Failed to update member role" });
+      setMemberActionUserId(null);
+      return;
+    }
+    setMessage({ type: "success", text: "Member role updated" });
+    setMemberActionUserId(null);
+    router.refresh();
+  }
+
+  async function handleRemoveMember(userId: string) {
+    setMemberActionUserId(userId);
+    setMessage(null);
+    const res = await fetch(`/api/organizations/${organization.id}/members`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage({ type: "error", text: data.error || "Failed to remove member" });
+      setMemberActionUserId(null);
+      return;
+    }
+    setMessage({ type: "success", text: "Member removed" });
+    setMemberActionUserId(null);
+    router.refresh();
+  }
+
   return (
     <div className="space-y-8">
       {/* Organization Details Section */}
@@ -255,6 +389,79 @@ export default function OrganizationSettingsForm({
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-white">Invite members</h2>
+        <form onSubmit={handleCreateInvite} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div className="md:col-span-2">
+            <label className="block text-sm text-zinc-400 mb-2">Email</label>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Role</label>
+            <select
+              value={inviteRole}
+              onChange={(e) => setInviteRole(e.target.value as "ORG_ADMIN" | "ORG_USER")}
+              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white"
+            >
+              <option value="ORG_USER">Member</option>
+              <option value="ORG_ADMIN">Admin</option>
+            </select>
+          </div>
+          <Button type="submit" loading={isLoading}>Send Invite</Button>
+        </form>
+        {inviteRetryAfter !== null && (
+          <p className="text-xs text-rose-300">Rate limited. Retry in {inviteRetryAfter}s.</p>
+        )}
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-zinc-300">Pending invites</h3>
+          {invites.length === 0 ? (
+            <p className="text-sm text-zinc-500">No pending invites.</p>
+          ) : (
+            <div className="space-y-2">
+              {invites.map((invite) => (
+                <div key={invite.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-3 rounded-xl border border-white/10 bg-black/20">
+                  <div>
+                    <p className="text-sm text-zinc-200">{invite.invitedEmail}</p>
+                    <p className="text-xs text-zinc-500">
+                      {invite.role === "ORG_ADMIN" ? "Admin" : "Member"} · expires {new Date(invite.expiresAt).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="ghost" size="sm" onClick={() => handleResendInvite(invite.id)}>
+                      Resend
+                    </Button>
+                    <Button type="button" variant="danger" size="sm" onClick={() => handleRevokeInvite(invite.id)}>
+                      Revoke
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-white">Members</h2>
+          <p className="text-sm text-zinc-400">People with access to this organization</p>
+        </div>
+        <MemberList
+          members={members}
+          canManage
+          onRoleChange={handleRoleChange}
+          onRemove={handleRemoveMember}
+          loadingUserId={memberActionUserId}
+        />
       </div>
 
       {/* Info message for last org */}
