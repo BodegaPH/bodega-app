@@ -50,6 +50,8 @@ model User {
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  @@index([systemRole])
 }
 
 model Organization {
@@ -109,6 +111,7 @@ model Membership {
   updatedAt     DateTime      @updatedAt
 
   @@unique([userId, orgId])
+  @@index([orgId, role, createdAt])
 }
 
 model Location {
@@ -167,6 +170,8 @@ model Movement {
   @@index([orgId, itemId, createdAt])
   @@index([orgId, createdAt])
   @@index([orgId, locationId, createdAt])
+  @@index([createdAt])
+  @@index([type, createdAt])
 }
 
 model CurrentStock {

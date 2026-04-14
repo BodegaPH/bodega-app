@@ -6,7 +6,6 @@ import {
   isSensitivePlatformAdminAction,
   logPlatformSecurityAudit,
 } from "@/lib/platform-admin-security";
-import { normalizeSystemRole } from "@/lib/system-role";
 
 const ROLE_CHANGE_ACTION = "platform_admin.role_change";
 
@@ -31,12 +30,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Role is required" }, { status: 400 });
   }
 
-  const normalizedRole = normalizeSystemRole(
-    requestedRole === "SYSTEM_ADMIN" || requestedRole === "PLATFORM_ADMIN"
-      ? requestedRole
-      : "USER",
-  );
-  const canonicalRole = normalizedRole === "PLATFORM_ADMIN" ? "PLATFORM_ADMIN" : "USER";
+  if (requestedRole !== "USER" && requestedRole !== "PLATFORM_ADMIN") {
+    return NextResponse.json(
+      { error: "Role must be exactly one of: USER, PLATFORM_ADMIN" },
+      { status: 400 },
+    );
+  }
+
+  const canonicalRole = requestedRole;
+
+  if (auth.session.user.id === userId && canonicalRole === "USER") {
+    return NextResponse.json(
+      { error: "Platform admins cannot demote their own account" },
+      { status: 400 },
+    );
+  }
 
   let user: { id: string; systemRole: string; updatedAt: Date };
   try {
