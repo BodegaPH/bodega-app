@@ -29,18 +29,18 @@ export default async function AdminOrganizationsPage({ searchParams }: Organizat
 
   return (
     <section className="space-y-4">
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/40 p-6 backdrop-blur-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Organizations
-        </h1>
-        <p className="mt-2 text-sm text-zinc-400 sm:text-base">
-          Read-only platform-wide list of organizations.
-        </p>
+      <div className="flex items-end justify-between px-2">
+        <div>
+          <h1 className="text-2xl font-mono uppercase tracking-widest text-white">[SYS.DIR] Organizations</h1>
+          <p className="mt-2 text-[10px] font-mono text-zinc-500">
+            Read-only platform-wide list of organizations.
+          </p>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/40 backdrop-blur-3xl">
-        <table className="min-w-full divide-y divide-white/5 text-sm">
-          <thead className="bg-white/5 text-left text-xs uppercase tracking-wide text-zinc-400">
+      <div className="overflow-hidden rounded-none border border-white/10 bg-zinc-950">
+        <table className="min-w-full text-left text-[12px] font-mono">
+          <thead className="bg-zinc-900/50 text-[10px] uppercase tracking-widest text-zinc-500 border-b border-white/5">
             <tr>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Name</th>
@@ -49,31 +49,31 @@ export default async function AdminOrganizationsPage({ searchParams }: Organizat
               <th className="px-4 py-3 text-right">Members</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 text-zinc-200">
+          <tbody className="divide-y divide-white/5">
             {organizations.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-6 py-14 text-center text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                   No organizations found.
                 </td>
               </tr>
             ) : (
               organizations.map((org) => (
-                <tr key={org.id}>
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-400">{org.id}</td>
-                  <td className="px-4 py-3 text-zinc-100">{org.name}</td>
+                <tr key={org.id} className="text-zinc-300 hover:bg-white/[0.01]">
+                  <td className="px-4 py-3 font-mono text-[10px] text-zinc-500 uppercase">{org.id.split('-')[0]}...</td>
+                  <td className="px-4 py-3 uppercase tracking-widest">{org.name}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full border px-2 py-0.5 text-xs ${
+                      className={`rounded-none border px-2 py-0.5 text-[10px] uppercase tracking-widest inline-flex ${
                         org.isActive
-                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
-                          : "border-zinc-500/30 bg-zinc-500/10 text-zinc-300"
+                          ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-400"
+                          : "border-zinc-500/30 bg-zinc-950/30 text-zinc-500"
                       }`}
                     >
                       {org.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-300">{org.createdAt.slice(0, 10)}</td>
-                  <td className="px-4 py-3 text-right text-zinc-200">{org.memberCount}</td>
+                  <td className="px-4 py-3 text-zinc-400">{org.createdAt.slice(0, 10)}</td>
+                  <td className="px-4 py-3 text-right text-zinc-300">{org.memberCount}</td>
                 </tr>
               ))
             )}
@@ -81,25 +81,37 @@ export default async function AdminOrganizationsPage({ searchParams }: Organizat
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-zinc-400">
-        <span>
-          Page {Math.min(page, totalPages)} of {totalPages} · {total} total
-        </span>
-        <div className="flex gap-2">
-          <Link
-            href={`/admin/organizations?page=${prevPage}`}
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-zinc-300 hover:bg-white/10"
-          >
-            Previous
-          </Link>
-          <Link
-            href={`/admin/organizations?page=${nextPage}`}
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-zinc-300 hover:bg-white/10"
-          >
-            Next
-          </Link>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between rounded-none border border-white/10 bg-zinc-950 px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-zinc-400">
+          <span>
+            Page {Math.min(page, totalPages)} of {totalPages} · {total} total
+          </span>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin/organizations?page=${prevPage}`}
+              aria-disabled={page <= 1}
+              className={`rounded-none border border-white/10 px-3 py-1.5 transition-none ${
+                page <= 1
+                  ? "pointer-events-none opacity-40"
+                  : "hover:bg-white/5 text-zinc-300"
+              }`}
+            >
+              Previous
+            </Link>
+            <Link
+              href={`/admin/organizations?page=${nextPage}`}
+              aria-disabled={page >= totalPages}
+              className={`rounded-none border border-white/10 px-3 py-1.5 transition-none ${
+                page >= totalPages
+                  ? "pointer-events-none opacity-40"
+                  : "hover:bg-white/5 text-zinc-300"
+              }`}
+            >
+              Next
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

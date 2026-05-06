@@ -17,9 +17,9 @@ export default function AdminAuditTable({
 }: AdminAuditTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-zinc-900/40 px-6 py-14 text-center backdrop-blur-3xl">
-        <h3 className="text-lg font-medium tracking-tight text-zinc-200">No audit rows found</h3>
-        <p className="mt-2 text-sm text-zinc-500">
+      <div className="rounded-none border border-dashed border-white/10 bg-zinc-950 px-6 py-14 text-center">
+        <h3 className="text-[12px] font-mono uppercase tracking-widest text-zinc-200">No audit rows found</h3>
+        <p className="mt-2 text-[10px] font-mono text-zinc-500">
           Try widening your filters while keeping the 90-day bound.
         </p>
       </div>
@@ -28,9 +28,9 @@ export default function AdminAuditTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-2xl border border-white/5 bg-zinc-900/40 backdrop-blur-3xl">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-zinc-900/50 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+      <div className="overflow-x-auto rounded-none border border-white/10 bg-zinc-950">
+        <table className="min-w-full text-left text-[12px] font-mono">
+          <thead className="bg-zinc-900/50 text-[10px] uppercase tracking-widest text-zinc-500 border-b border-white/5">
             <tr>
               <th className="px-4 py-3">Created</th>
               <th className="px-4 py-3">Organization</th>
@@ -50,7 +50,7 @@ export default function AdminAuditTable({
                 <td className="px-4 py-3 text-zinc-300">{row.itemName}</td>
                 <td className="px-4 py-3 text-zinc-400">{row.locationName}</td>
                 <td className="px-4 py-3">
-                  <span className="inline-flex rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
+                  <span className="inline-flex rounded-none border border-indigo-500/30 bg-indigo-950/30 px-2 py-0.5 text-[10px] uppercase tracking-widest text-indigo-400">
                     {row.type}
                   </span>
                 </td>
@@ -64,7 +64,7 @@ export default function AdminAuditTable({
       </div>
 
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between rounded-xl border border-white/5 bg-zinc-900/40 px-4 py-3 text-sm text-zinc-400 backdrop-blur-3xl">
+        <div className="flex items-center justify-between rounded-none border border-white/10 bg-zinc-950 px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-zinc-400">
           <span>
             Page {pagination.page} of {pagination.totalPages}
           </span>
@@ -72,7 +72,7 @@ export default function AdminAuditTable({
             <Link
               href={previousPageHref}
               aria-disabled={pagination.page <= 1}
-              className={`rounded-md border border-white/5 px-3 py-1.5 ${
+              className={`rounded-none border border-white/10 px-3 py-1.5 transition-none ${
                 pagination.page <= 1
                   ? "pointer-events-none opacity-40"
                   : "hover:bg-white/5 text-zinc-300"
@@ -83,7 +83,7 @@ export default function AdminAuditTable({
             <Link
               href={nextPageHref}
               aria-disabled={pagination.page >= pagination.totalPages}
-              className={`rounded-md border border-white/5 px-3 py-1.5 ${
+              className={`rounded-none border border-white/10 px-3 py-1.5 transition-none ${
                 pagination.page >= pagination.totalPages
                   ? "pointer-events-none opacity-40"
                   : "hover:bg-white/5 text-zinc-300"

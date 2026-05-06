@@ -6,6 +6,14 @@ export interface MonitoringOverviewDto {
   largeOutboundCount: number;
   orgCount: number;
   userCount: number;
+  recentActivity: {
+    id: string;
+    type: MovementType;
+    orgName: string;
+    itemName: string;
+    quantity: string;
+    createdAt: string;
+  }[];
 }
 
 export interface MonitoringUsersListRowDto {

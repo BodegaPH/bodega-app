@@ -15,7 +15,7 @@ export class PlatformAdminMonitoringRepository {
   async getOverview(): Promise<MonitoringOverviewDto> {
     const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [lowStockRaw, recentAdjustmentsCount, recentIssues, orgCount, userCount] =
+    const [lowStockRaw, recentAdjustmentsCount, recentIssues, orgCount, userCount, latestMovements] =
       await Promise.all([
         this.db.$queryRaw<Array<{ count: number | string | bigint }>>`
           SELECT COUNT(*)::int AS count
@@ -52,6 +52,18 @@ export class PlatformAdminMonitoringRepository {
       }),
       this.db.organization.count(),
       this.db.user.count(),
+      this.db.movement.findMany({
+        take: 15,
+        select: {
+          id: true,
+          type: true,
+          quantity: true,
+          createdAt: true,
+          item: { select: { name: true } },
+          organization: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
     ]);
 
     const largeOutboundCount = recentIssues.reduce((count, issue) => {
@@ -66,12 +78,22 @@ export class PlatformAdminMonitoringRepository {
 
     const lowStockCount = Number(lowStockRaw[0]?.count ?? 0);
 
+    const recentActivity = latestMovements.map(m => ({
+      id: m.id,
+      type: m.type as MovementType,
+      orgName: m.organization.name,
+      itemName: m.item.name,
+      quantity: m.quantity.toString(),
+      createdAt: m.createdAt.toISOString(),
+    }));
+
     return {
       lowStockCount,
       recentAdjustmentsCount,
       largeOutboundCount,
       orgCount,
       userCount,
+      recentActivity,
     };
   }
 

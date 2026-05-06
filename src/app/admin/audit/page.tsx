@@ -72,34 +72,44 @@ export default async function AdminAuditPage({ searchParams }: AuditPageProps) {
   return (
     <section className="space-y-4">
       {monitoringUnavailable ? (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-          Monitoring data unavailable. Audit view is in degraded mode.
+        <div className="rounded-none border border-amber-500/30 bg-amber-950/30 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-amber-400">
+          [WARNING] Monitoring data unavailable. Audit view is in degraded mode.
         </div>
       ) : null}
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/40 p-6 backdrop-blur-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Movement Audit</h1>
-        <p className="mt-2 text-sm text-zinc-400 sm:text-base">
-          Cross-org movement history with bounded, read-only filters.
-        </p>
-        <p className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-          Filter hint: audit windows are bounded to a maximum of 90 days.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-zinc-500">
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between px-2 gap-4">
+        <div>
+          <h1 className="text-2xl font-mono uppercase tracking-widest text-white">[SYS.MON] Audit</h1>
+          <p className="mt-2 text-[10px] font-mono text-zinc-500">
+            Cross-org movement history with bounded, read-only filters.
+          </p>
+          <p className="mt-3 inline-block rounded-none border border-amber-500/30 bg-amber-950/30 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-amber-400">
+            [NOTE] Audit windows are bounded to a maximum of 90 days.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+          <span className="rounded-none border border-white/10 bg-zinc-950 px-2 py-1">
             Page: {pagination.page}
           </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            From: {from ?? "—"}
-          </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            To: {to ?? "—"}
-          </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            Type: {movementType ?? "All"}
-          </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            Org: {orgId ?? "All"}
-          </span>
+          {from && (
+            <span className="rounded-none border border-white/10 bg-zinc-950 px-2 py-1">
+              From: {from}
+            </span>
+          )}
+          {to && (
+            <span className="rounded-none border border-white/10 bg-zinc-950 px-2 py-1">
+              To: {to}
+            </span>
+          )}
+          {movementType && (
+            <span className="rounded-none border border-white/10 bg-zinc-950 px-2 py-1">
+              Type: {movementType}
+            </span>
+          )}
+          {orgId && (
+            <span className="rounded-none border border-white/10 bg-zinc-950 px-2 py-1">
+              Org: {orgId}
+            </span>
+          )}
         </div>
       </div>
 
