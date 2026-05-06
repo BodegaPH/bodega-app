@@ -127,4 +127,4 @@ Bodega strictly enforces a clean, layered architecture separating business logic
 
 ## 📜 Legal & License
 
-© 2026 Bodega Logistics. All Rights Reserved. Not for public distribution.
+© 2026 Bodega IMS. All Rights Reserved. Not for public distribution.
