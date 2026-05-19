@@ -14,7 +14,7 @@ export default async function DashboardPage({
   params: Promise<{ orgId: string }>;
 }) {
   const { orgId } = await params;
-  const [{ orgName, stats, recentActivity, lowStock, volumeData }, indicators] =
+  const [{ orgName, stats, recentActivity, lowStock, volumeData, simulationRisk }, indicators] =
     await Promise.all([getDashboardData(orgId), getIndicators(orgId)]);
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -158,6 +158,48 @@ export default async function DashboardPage({
 
         {/* Right Col */}
         <div className="flex flex-col gap-px bg-white/10">
+          {/* Monte Carlo Risk */}
+          <div className="flex flex-col bg-zinc-950 overflow-visible">
+            <div className="px-5 py-4 border-b border-white/10 bg-zinc-900/20">
+              <h2 className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-300">
+                Monte Carlo Risk (30d)
+              </h2>
+            </div>
+            <div className="p-0">
+              {simulationRisk.length === 0 ? (
+                <div className="p-5 text-xs text-zinc-500">
+                  No simulation snapshot yet. Create movements to generate risk projections.
+                </div>
+              ) : (
+                <ul className="divide-y divide-white/5">
+                  {simulationRisk.map((risk) => (
+                    <li
+                      key={risk.id}
+                      className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex flex-col pr-3 min-w-0">
+                        <span className="text-sm text-white font-medium truncate">
+                          {risk.itemName}
+                        </span>
+                        <span className="text-xs text-zinc-500 truncate">
+                          {risk.itemSku} • {risk.locationName}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-mono text-amber-400">
+                          {(risk.stockoutProbability * 100).toFixed(1)}%
+                        </span>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">
+                          stockout risk
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
           {/* Needs Attention */}
           <div className="flex flex-col bg-zinc-950 overflow-visible">
             <div className="px-5 py-4 border-b border-white/10 bg-zinc-900/20">

@@ -20,6 +20,7 @@ import {
   checkMovementExportRateLimit,
 } from "./export-rate-limiter";
 import { MOVEMENT_EXPORT_SYNC_ROW_CAP, MOVEMENT_EXPORT_TIMEOUT_MS } from "./constants";
+import { recomputeSnapshotForTarget } from "@/modules/simulation";
 import type {
   MovementDTO,
   CreateMovementInput,
@@ -253,6 +254,14 @@ export async function createMovement(orgId: string, payload: unknown): Promise<M
 
   try {
     const { movement } = await repo.createMovementWithStockUpdate(orgId, input, delta);
+
+    void recomputeSnapshotForTarget({
+      orgId,
+      itemId: input.itemId,
+      locationId: input.locationId,
+    }).catch(() => {
+      // Non-blocking by design: movement writes must succeed even if simulation refresh fails.
+    });
 
     return {
       id: movement.id,

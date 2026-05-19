@@ -14,6 +14,7 @@ import {
   BoxModelIcon as Building2,
   CheckIcon as Check,
   PlusIcon as Plus,
+  MagicWandIcon,
 } from "@radix-ui/react-icons";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -44,6 +45,12 @@ const navGroups = [
       { label: "Stock", href: "/inventory", icon: Package },
       { label: "Movements", href: "/movements", icon: ArrowLeftRight },
       { label: "Locations", href: "/locations", icon: MapPin },
+    ],
+  },
+  {
+    header: "INTELLIGENCE",
+    items: [
+      { label: "Simulation", href: "/simulation", icon: MagicWandIcon },
     ],
   },
   {

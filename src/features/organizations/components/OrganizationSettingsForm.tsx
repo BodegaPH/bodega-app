@@ -100,16 +100,42 @@ export default function OrganizationSettingsForm({
     setIsLoading(true);
 
     try {
+      const trimmedName = name.trim();
+
+      if (!trimmedName) {
+        setMessage({ type: "error", text: "Organization name is required" });
+        setIsLoading(false);
+        return;
+      }
+
+      if (trimmedName.length < 2) {
+        setMessage({
+          type: "error",
+          text: "Organization name must be at least 2 characters",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (trimmedName.length > 100) {
+        setMessage({
+          type: "error",
+          text: "Organization name must be 100 characters or less",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const res = await fetch(`/api/organizations/${organization.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name: trimmedName }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to update organization" });
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to update organization") });
         setIsLoading(false);
         return;
       }
@@ -148,7 +174,7 @@ export default function OrganizationSettingsForm({
       }
 
       if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to delete organization" });
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to delete organization") });
         setIsDeleting(false);
         setShowDeleteModal(false);
         setDeleteDetails(null);
@@ -187,7 +213,7 @@ export default function OrganizationSettingsForm({
 
       const data = await res.json();
       if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to transfer ownership" });
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to transfer ownership") });
         return;
       }
 
@@ -240,7 +266,7 @@ export default function OrganizationSettingsForm({
         if (retryAfter > 0) {
           setInviteRetryAfter(retryAfter);
         }
-        setMessage({ type: "error", text: data.error?.message || data.error || "Failed to invite member" });
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to invite member") });
         return;
       }
 
@@ -386,6 +412,8 @@ export default function OrganizationSettingsForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              minLength={2}
+              maxLength={100}
               className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-none"
             />
           </div>
