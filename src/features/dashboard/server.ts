@@ -10,6 +10,7 @@ import {
   getInventoryIndicators,
   type InventoryIndicators,
 } from "@/modules/indicators";
+import { getTopRiskSnapshots, type SimulationSnapshotDTO } from "@/modules/simulation";
 
 export type DashboardStats = {
   totalItems: number;
@@ -39,6 +40,7 @@ export type DashboardData = {
   recentActivity: RecentMovement[];
   lowStock: LowStockItem[];
   volumeData: { date: string; volume: number }[];
+  simulationRisk: SimulationSnapshotDTO[];
 };
 
 export async function getDashboardData(orgId: string): Promise<DashboardData> {
@@ -50,6 +52,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     recentActivity,
     lowStock,
     chartMovements,
+    simulationRisk,
   ] = (await Promise.all([
     getOrganizationName(orgId),
     getItemCount(orgId),
@@ -58,6 +61,12 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     getMovements(orgId, { page: 1, limit: 5 }),
     getLowStockItems(orgId),
     getMovements(orgId, { page: 1, limit: 100 }),
+    getTopRiskSnapshots(orgId, {
+      horizonDays: 30,
+      iterations: 5000,
+      lookbackDays: 90,
+      limit: 5,
+    }).catch(() => []),
   ])) as [
     string | null,
     number,
@@ -66,6 +75,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     Awaited<ReturnType<typeof getMovements>>,
     Awaited<ReturnType<typeof getLowStockItems>>,
     Awaited<ReturnType<typeof getMovements>>,
+    Awaited<ReturnType<typeof getTopRiskSnapshots>>,
   ];
 
   return {
@@ -100,6 +110,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
         .reverse()
         .map(date => ({ date, volume: grouped[date] }));
     })(),
+    simulationRisk,
   };
 }
 
