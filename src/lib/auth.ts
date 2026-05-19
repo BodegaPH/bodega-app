@@ -95,6 +95,16 @@ export const authOptions: NextAuthOptions = {
         const role = normalizeSystemRole(u.role ?? u.systemRole ?? "USER");
         token.id = u.id ?? token.id;
         token.role = role;
+
+        if (u.id && !token.activeOrgId) {
+          const membership = await prisma.membership.findFirst({
+            where: { userId: u.id },
+            orderBy: { createdAt: "asc" },
+            select: { orgId: true },
+          });
+
+          token.activeOrgId = membership?.orgId;
+        }
       }
       // Allow updating activeOrgId via update() call
       if (trigger === "update" && session?.activeOrgId !== undefined) {
